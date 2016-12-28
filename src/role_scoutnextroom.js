@@ -10,12 +10,12 @@
 roles.scoutnextroom = {};
 
 roles.scoutnextroom.getPartConfig = function(room, energy, heal) {
-  var parts = [MOVE, CLAIM];
+  var parts = [MOVE,MOVE,MOVE,MOVE,MOVE, CLAIM];
   return room.getPartConfig(energy, parts);
 };
 
 roles.scoutnextroom.energyBuild = function(room, energy) {
-  return 650;
+  return 850;
 };
 
 roles.scoutnextroom.execute = function(creep) {
