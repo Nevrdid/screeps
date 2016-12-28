@@ -5,7 +5,7 @@ config.profiler.enabled = false;
 config.stats.enabled = true;
 config.stats.summary = true;
 
-config.nextRoom.numberOfNextroomers = 6;
+config.nextRoom.numberOfNextroomers = 8;
 config.nextRoom.minNewRoomDistance = 1;
 
-config.room.nextroomerInterval = 250;
+config.room.nextroomerInterval = _.ceil(1500/config.nextRoom.numberOfNextroomers);

@@ -10,8 +10,10 @@ roles.defender = {};
 roles.defender.boostActions = ['rangedAttack', 'heal'];
 
 roles.defender.getPartConfig = function(room, energy, heal) {
-  var parts = [MOVE, MOVE, RANGED_ATTACK, HEAL];
-  return room.getPartConfig(energy, parts); //.sort().reverse(); better to not let attack parts die firstly
+
+  let datas = {layout: [MOVE, MOVE, RANGED_ATTACK, HEAL]};
+  return room.getPartConfig(energy, datas);
+
 };
 
 roles.defender.energyRequired = function(room) {
