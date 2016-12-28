@@ -90,18 +90,14 @@ RoomPosition.prototype.validPosition = function() {
 };
 
 RoomPosition.prototype.buildRoomPosition = function(direction, distance) {
-  if (distance > 2) {
-    console.log('!!!! Distance > 2 not yet implemented');
-  } else if (distance === 2) {
-    let dirs = [[1,1],[2,1],[2,2],[2,3],[3,3],[4,3],[4,4],[4,5],[5,5],[6,5],[6,6],[6,7],[7,7],[8,7],[8,8],[8,1]];
-    return this.getAdjacentPosition(dirs[direction - 1][0]).getAdjacentPosition(dirs[direction - 1][1]);
-  } else {
-    return this.getAdjacentPosition(direction - 1);
+  if (distance > 1) {
+    console.log('!!!! Distance > 1 not yet implemented');
   }
+  return this.getAdjacentPosition((direction - 1) % 8 + 1);
 };
 
 RoomPosition.prototype.findNearPosition = function*() {
-  let distanceMax = config.constructionSite.findNearDist;
+  let distanceMax = 1;
   for (let distance = 1; distance <= distanceMax; distance++) {
     for (let direction = 1; direction <= 8 * distance; direction++) {
       let posNew = this.buildRoomPosition(direction, distance);

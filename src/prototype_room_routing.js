@@ -9,7 +9,7 @@ Room.isRoomUnderAttack = function(roomName) {
     return false;
   }
 
-  if (Game.time - Memory.rooms[roomName].hostile.lastUpdate > config.hostile.rememberInRoom) {
+  if (Game.time - Memory.rooms[roomName].hostile.lastUpdate > config.hostile.remeberInRoom) {
     delete Memory.rooms[roomName].hostile;
     let room = Game.rooms[roomName];
     room.log('newmove: isRoomUnderAttack: lastUpdate too old');

@@ -83,14 +83,12 @@ function setStructures(room, path, costMatrixBase) {
         if (!room.memory.position.pathEndLevel) {
           room.memory.position.pathEndLevel = [0];
         }
-        if (CONTROLLER_STRUCTURES.extension[room.memory.position.pathEndLevel.length] <=
-           room.memory.position.structure.extension.length) {
+        if (CONTROLLER_STRUCTURES.extension[room.memory.position.pathEndLevel.length] <= room.memory.position.structure.extension.length) {
           room.memory.position.pathEndLevel.push(pathI);
         }
         continue;
       }
-      if (room.memory.position.structure.spawn.length < CONTROLLER_STRUCTURES.spawn[8] &&
-         room.memory.position.structure.extension.length < CONTROLLER_STRUCTURES.extension[8]) {
+      if (room.memory.position.structure.spawn.length < CONTROLLER_STRUCTURES.spawn[8] && room.memory.position.structure.extension.length < CONTROLLER_STRUCTURES.extension[8]) {
         continue;
       }
 

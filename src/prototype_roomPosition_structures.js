@@ -42,20 +42,6 @@ RoomPosition.prototype.setSpawn = function(posPath, posNext) {
 
 RoomPosition.prototype.setExtension = function() {
   let room = Game.rooms[this.roomName];
-  if (config.constructionSite.findNearDist > 1) {
-    let around = [];
-    let dirs = [(0,-1), (-1,0), (0,1), (1,0)];
-    let cB = function(currentValue) {
-      around.push(room.lookForAt(LOOK_STRUCTURES, this.pos + currentValue).find((s) => s.type === 'extension'));
-    };
-
-    dirs.forEach(cB);
-
-    if (around.length) {
-      return false;
-    }
-  }
-
   if (room.memory.position.structure.extension.length >= CONTROLLER_STRUCTURES.extension[8]) {
     return false;
   }
