@@ -79,20 +79,23 @@ Room.prototype.spawnCheckForCreate = function(creepsConfig) {
   if (this.memory.queue.length > 0 && (creepsConfig.length === 0 || creepsConfig[0] != 'harvester')) {
     let room = this;
     let priorityQueue = function(object) {
-      if (object.role == 'harvester') {
+      if(object.role === 'defenser'){
         return 1;
+      }
+      if (object.role == 'harvester') {
+        return 2;
       }
 
       let target = object.routing && object.routing.targetRoom;
 
       if (target == room.name) {
         if (object.role == 'sourcer') {
-          return 2;
-        }
-        if (object.role == 'storagefiller') {
           return 3;
         }
-        return 4;
+        if (object.role == 'storagefiller') {
+          return 4;
+        }
+        return 5;
       }
 
       if (object.role == 'nextroomer') {
@@ -101,7 +104,7 @@ Room.prototype.spawnCheckForCreate = function(creepsConfig) {
 
       // TODO added because target was misused as a pos object
       if (object.role == 'defendranged') {
-        return 3;
+        return 4;
       }
 
       if (!target) {
