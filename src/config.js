@@ -57,11 +57,12 @@ global.config = {
   },
 
   constructionSite: {
-    maxIdleTime: 5000
+    maxIdleTime: 5000,
+    findNearDist: 1
   },
 
   hostile: {
-    remeberInRoom: 1500
+    rememberInRoom: 1500
   },
 
   path: {
