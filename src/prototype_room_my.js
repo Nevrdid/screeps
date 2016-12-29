@@ -229,7 +229,7 @@ Room.prototype.checkCanHelp = function() {
   }
 
   let nearestRoom = this.memory.nearestRoom;
-  if (!nearestRoom || !Memory.rooms[nearestRoom].needHelp) {
+  if (!nearestRoom || !Memory.rooms[nearestRoom] || !Memory.rooms[nearestRoom].needHelp) {
     nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.carryHelpers.maxDistance);
     this.memory.nearestRoom = nearestRoom;
   }
@@ -322,8 +322,6 @@ Room.prototype.executeRoom = function() {
 
   var creepsInRoom = this.find(FIND_MY_CREEPS);
   var spawn;
-
-  var creepsConfig = [];
   if (!building) {
     let amount = 1;
     if (!room.storage) {
@@ -386,10 +384,8 @@ Room.prototype.executeRoom = function() {
       var defender = {
         role: 'defendranged'
       };
-      creepsConfig.push('defendranged');
       if (this.memory.attackTimer > 300) {
         defender.role = 'defendmelee';
-        creepsConfig.push('defendmelee');
       }
       if (Game.time % 250 === 0 && !this.inQueue(defender)) {
         this.memory.queue.push(defender);
@@ -432,7 +428,6 @@ Room.prototype.executeRoom = function() {
   });
   if (constructionSites.length > 0) {
     let amount = 1;
-    creepsConfig.push('planer');
     for (let cs of constructionSites) {
       if (cs.structureType == STRUCTURE_STORAGE) {
         amount = 3;
@@ -488,30 +483,9 @@ Room.prototype.executeRoom = function() {
   this.handleTerminal();
   this.handleNukeAttack();
 
-  var creep;
-  var creep_index;
-
-  for (var creep_name in creepsInRoom) {
-    creep = creepsInRoom[creep_name];
-    creep_index = creepsConfig.indexOf(creep.memory.role);
-    if (creep_index != -1) {
-      creepsConfig.splice(creep_index, 1);
-    }
+  if (Game.time % 10 === 0) {
+    this.spawnCheckForCreate();
   }
-
-  for (var spawn_name in spawns) {
-    spawn = spawns[spawn_name];
-    if (!spawn.spawning || spawn.spawning === null) {
-      continue;
-    }
-
-    creep = Game.creeps[spawn.spawning.name];
-    creep_index = creepsConfig.indexOf(creep.memory.role);
-    if (creep_index != -1) {
-      creepsConfig.splice(creep_index, 1);
-    }
-  }
-  this.spawnCheckForCreate(creepsConfig);
 
   this.handleMarket();
   brain.stats.addRoom(this.name, cpuUsed);
