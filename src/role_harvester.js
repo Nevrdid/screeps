@@ -16,6 +16,18 @@
  */
 
 roles.harvester = {};
+
+roles.harvester.settings = {
+  param: ['controller.level'],
+  layout: 'MWC',
+  amount: {
+    1: [2, 1, 1],
+    3: [1, 1, 1],
+  },
+  maxLayoutAmount: 6,
+};
+//roles.harvester.settings.prefixParts = config.creep.energyFromStorageThreshold ? [WORK, MOVE] : undefined;
+
 roles.harvester.stayInRoom = true;
 roles.harvester.buildRoad = true;
 roles.harvester.boostActions = ['capacity'];
@@ -37,7 +49,10 @@ roles.harvester.preMove = function(creep, directions) {
   creep.setNextSpawn();
   creep.spawnReplacement(1);
 
-  if (!creep.room.storage || (creep.room.storage.store.energy + creep.carry.energy) < config.creep.energyFromStorageThreshold) {
+  let linkStorage = creep.room.getLinkStorage();
+  if (linkStorage && linkStorage.energy > config.creep.linkStorageTreshold * linkStorage.energyCapacity) {
+    creep.withdraw(linkStorage, RESOURCE_ENERGY);
+  } else if (!creep.room.storage || (creep.room.storage.store.energy + creep.carry.energy) < config.creep.energyFromStorageThreshold) {
     creep.harvesterBeforeStorage();
     creep.memory.routing.reached = true;
     return true;
@@ -101,27 +116,6 @@ roles.harvester.action = function(creep) {
   creep.memory.routing.reverse = true;
   delete creep.memory.routing.reached;
   return true;
-};
-
-roles.harvester.getPartConfig = function(room, energy, heal) {
-  var parts = [MOVE, WORK, MOVE, CARRY];
-  let partConfig = room.getPartConfig(energy, parts);
-  if (room.storage && room.storage.my && room.storage.store.energy > config.creep.energyFromStorageThreshold) {
-    parts = [MOVE, CARRY, CARRY];
-    partConfig = room.getPartConfig(energy - 150, parts);
-    partConfig.unshift(WORK);
-    partConfig.unshift(MOVE);
-  }
-  return partConfig;
-};
-
-roles.harvester.energyRequired = function(room) {
-  return 250;
-};
-
-roles.harvester.energyBuild = function(room, energy) {
-  let build = Math.min(1500, Math.max(energy, 250));
-  return build;
 };
 
 roles.harvester.execute = function(creep) {

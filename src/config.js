@@ -45,6 +45,10 @@ global.config = {
     //screepsplusToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRvb2FuZ2VscyIsImlhdCI6MTQ4MzU2MTU3OSwiYXVkIjoic2NyZWVwc3BsLnVzIiwiaXNzIjoic2NyZWVwc3BsLnVzIn0.NhobT7Jg8bOAg-MYqrYsgeMgXEVXGVYG9s3G9Qpfm-o'
   },
 
+  debug: {
+    getPartsConfLogs: false
+  },
+
   autoattack: {
     disabled: false,
     notify: false,
@@ -122,6 +126,8 @@ global.config = {
     structurerMinEnergy: 1300,
     reserverDefender: true,
     energyFromStorageThreshold: 2000,
+    sortParts: true,
+    linkStorageTreshold: 0.2,
   },
 
   room: {
@@ -156,6 +162,24 @@ global.config = {
     storage: 100000,
     minAmount: 5000,
     minAmountForMarket: 100000,
+  },
+
+  priorityQueue: {
+    sameRoom: {
+      harvester: 1,
+      sourcer: 2,
+      storagefiller: 3,
+      defendranged: 3
+    },
+    otherRoom: {
+      harvester: 1,
+      defender: 2,
+      defendranged: 3,
+      nextroomer: 5,
+      reserver: 6,
+      carry: 7,
+      sourcer: 8
+    }
   }
 };
 
