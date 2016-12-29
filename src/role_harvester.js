@@ -23,7 +23,12 @@ roles.harvester.boostActions = ['capacity'];
 roles.harvester.getPartConfig = function(room, energy, heal) {
   let datas = {layout: [MOVE, MOVE, WORK, CARRY]};
   let check = (room.storage && room.storage.my && room.storage.store.energy > config.creep.energyFromStorageThreshold);
-  return room.getPartConfig(energy - 150 * check, datas).concat([WORK,MOVE] * check);
+  if(check){
+    return room.getPartConfig(energy - 150, datas).concat([WORK,MOVE]);
+  } else {
+    return room.getPartConfig(energy, datas));
+  }
+  
 };
 
 roles.harvester.energyRequired = function(room) {
