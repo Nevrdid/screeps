@@ -26,7 +26,7 @@ roles.harvester.getPartConfig = function(room, energy, heal) {
   if(check){
     return room.getPartConfig(energy - 150, datas).concat([WORK,MOVE]);
   } else {
-    return room.getPartConfig(energy, datas));
+    return room.getPartConfig(energy, datas);
   }
   
 };
