@@ -20,24 +20,14 @@ roles.harvester.stayInRoom = true;
 roles.harvester.buildRoad = true;
 roles.harvester.boostActions = ['capacity'];
 
-roles.harvester.getPartConfig = function(room, energy, heal) {
-  let datas = {layout: [MOVE, MOVE, WORK, CARRY]};
-  let check = (room.storage && room.storage.my && room.storage.store.energy > config.creep.energyFromStorageThreshold);
-  if(check){
-    return room.getPartConfig(energy - 150, datas).concat([WORK,MOVE]);
-  } else {
-    return room.getPartConfig(energy, datas);
-  }
-  
-};
-
-roles.harvester.energyRequired = function(room) {
-  return 250;
-};
-
-roles.harvester.energyBuild = function(room, energy) {
-  let build = Math.min(1500, Math.max(energy, 250));
-  return build;
+roles.harvester.getPartConfig = function(room) {
+  let datas = {layout: [MOVE, MOVE, WORK, CARRY],
+    maxEnergyUsed: 1500,
+    minEnergyStored: 250};
+  let check = (room.storage && room.storage.my &&
+    room.storage.store.energy > config.creep.energyFromStorageThreshold);
+  if (check) { datas.bonusParts = [WORK, MOVE]; }
+  return room.getPartConfig(datas);
 };
 
 roles.harvester.preMove = function(creep, directions) {
