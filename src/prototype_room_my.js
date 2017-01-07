@@ -348,25 +348,28 @@ Room.prototype.executeRoom = function() {
         console.log('---!!!---', this.name, ' need energy ---!!!---');
       }
 
-    } else if (this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval &&
+    } else {
+      if (this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval &&
         this.storage) {
-      if (Memory.needEnergyRooms) {
+        if (Memory.needEnergyRooms) {
+          if (key >= 0) { delete Memory.needEnergyRooms[key]; }
 
-        let nearestRoom = Memory.nearestRoom;
-        let needHelp = _.find(Memory.needEnergyRooms, nearestRoom);
+          let nearestRoom = Memory.nearestRoom;
+          let needHelp = _.find(Memory.needEnergyRooms, nearestRoom);
 
-        if (needHelp === undefined || !nearestRoom) {
-          nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.carryHelpers.maxDistance);
-          Memory.nearestRoom = nearestRoom;
-        }
-        console.log(nearestRoom);
-        if (this.name !== nearestRoom && !Game.rooms[nearestRoom].hostile) {
-          this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
-            this.name, undefined, nearestRoom);
-          console.log('---!!! ', this.name, ' send energy to: ', nearestRoom, ' !!!---');
+          if (needHelp === undefined || !nearestRoom) {
+            nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.carryHelpers.maxDistance);
+            Memory.nearestRoom = nearestRoom;
+          }
+          console.log(nearestRoom);
+          if (this.name !== nearestRoom && !Game.rooms[nearestRoom].hostile) {
+            this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
+              this.name, undefined, nearestRoom);
+            console.log('---!!! ', this.name, ' send energy to: ', nearestRoom, ' !!!---');
+          }
         }
       }
-    } else if (key >= 0) { delete Memory.needEnergyRooms[key]; }
+    }
     this.memory.energyAvailableSum = 0;
   }
 

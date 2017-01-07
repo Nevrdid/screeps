@@ -61,7 +61,7 @@ global.config = {
   },
 
   carryHelpers: {
-    ticksUntilHelpCheck: 200,
+    ticksUntilHelpCheck: 100,
     maxHelpersAmount: 5,
     helpTreshold: 1000,
     needTreshold: 500,
