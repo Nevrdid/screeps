@@ -22,23 +22,23 @@ brain.stats.add = function(roomName, path, newContent) {
     Memory.stats[name].room[roomName + path] = newContent;
 
     /**
-    * let existContent = Memory.stats[name].room[roomName + path];
-    * Memory.stats[name].room[roomName + path] = existContent ? _.concat(existContent,newContent) : newContent
-    */
+     * let existContent = Memory.stats[name].room[roomName + path];
+     * Memory.stats[name].room[roomName + path] = existContent ? _.concat(existContent,newContent) : newContent
+     */
 
   } else if (newContent) {
     Memory.stats[name + path] = newContent;
     /**
-    * let existContent = Memory.stats[name + path];
-    * Memory.stats[name + path] = existContent ? _.concat(existContent,newContent) : newContent;
-    */
+     * let existContent = Memory.stats[name + path];
+     * Memory.stats[name + path] = existContent ? _.concat(existContent,newContent) : newContent;
+     */
   }
   return true;
 };
 /**
-* stats.addPlayer call stats.add with given values at given sub player path.
-*
-*/
+ * stats.addPlayer call stats.add with given values at given sub player path.
+ *
+ */
 brain.stats.addRoot = function() {
   if (!config.stats.enabled) {
     return false;
@@ -72,10 +72,10 @@ brain.stats.addRoot = function() {
 *
 */
 brain.stats.addRoom = function(roomName) {
-  if (!config.stats.enabled) {return false;}
+  if (!config.stats.enabled) { return false; }
 
   let room = Game.rooms[roomName];
-  if (!room) {return false;}
+  if (!room) { return false; }
 
   if (room.memory.upgraderUpgrade === undefined) {
     room.memory.upgraderUpgrade = 0;
