@@ -57,8 +57,14 @@ global.config = {
     maxDistance: 17,
     minNewRoomDistance: 3,
     minEnergyForActive: 1000,
-    minDowngradPercent: 90,
-    ticksUntilHelpCheck: 100
+    minDowngradPercent: 90
+  },
+
+  carryHelpers: {
+    ticksUntilHelpCheck: 200,
+    maxHelpersAmount: 5,
+    helpTreshold: 1000,
+    needTreshold: 500
   },
 
   power: {

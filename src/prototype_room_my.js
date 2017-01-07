@@ -52,7 +52,6 @@ Room.prototype.myHandleRoom = function() {
       Memory.stats[pathBegin + '.storage.store.power'] = storage.store.power || 0;
     }
   }
-
   return this.executeRoom();
 };
 
@@ -345,8 +344,9 @@ Room.prototype.executeRoom = function() {
       Game.notify(this.name + ' Under attack from ' + hostiles[0].owner.username + ' at ' + Game.time);
     }
   }
+  let carryHelpInterval = config.carryHelpers.ticksUntilHelpCheck;
+  let key = _.findKey(Memory.needEnergyRooms, this.name);
 
-  let carryHelpInterval = config.nextRoom.ticksUntilHelpCheck;
   if (Game.time % carryHelpInterval) {
     this.memory.energyAvailableSum += this.energyAvailable;
   } else if (Memory.needEnergyRooms === undefined) {
@@ -354,21 +354,19 @@ Room.prototype.executeRoom = function() {
   } else if (this.memory.energyAvailableSum === undefined) {
     this.memory.energyAvailableSum = 0;
   } else {
-    if (this.memory.energyAvailableSum < 300 * carryHelpInterval) {
-      if (!this.memory.needEnergy) {
-        this.memory.needEnergy = true;
+    if (this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval) {
+      if (key < 0) {
         Memory.needEnergyRooms.push(this.name);
         console.log('!!!', this.name, ' need energy !!!');
       }
-    } else if (this.memory.energyAvailableSum > 1000 * carryHelpInterval && this.storage) {
-      if (Memory.needEnergyRooms && Game.rooms[Memory.needEnergyRooms[0]]) {
-        this.checkRoleToSpawn('carry', 1, this.storage.id, this.name, undefined, Game.rooms[Memory.needEnergyRooms[0]].name);
+    } else if (this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval && this.storage) {
+      if (Memory.needEnergyRooms && Game.rooms[Memory.needEnergyRooms[0]] &&
+         !Game.rooms[Memory.needEnergyRooms[0]].hostile.length) {
+        this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id, this.name, undefined, Game.rooms[Memory.needEnergyRooms[0]].name);
         console.log('!!!', this.name, ' give energy !!!');
       }
-    } else if (this.memory.needEnergy) {
-      let key = _.findKey(Memory.needEnergyRooms, this.name);
+    } else if (key >= 0) {
       delete Memory.needEnergyRooms[key];
-      this.memory.needEnergy = false;
     }
     this.memory.energyAvailableSum = 0;
   }
