@@ -355,16 +355,20 @@ Room.prototype.executeRoom = function() {
     this.memory.energyAvailableSum = 0;
   } else {
     if (this.memory.energyAvailableSum < 300 * carryHelpInterval) {
-      Memory.needEnergyRooms.push(this.name);
-      console.log('!!!', this.name, ' need energy !!!');
-    } else if (this.memory.energyAvailableSum > 1000 * carryHelpInterval && this.storage) {
-      this.checkRoleToSpawn('carry', 1, this.storage.id, this.name);
-      console.log('!!!', this.name, ' give energy !!!');
-    } else {
-      let key = _.findKeys(Memory.needEnergyRooms, this.name);
-      if (key) {
-        delete Memory.needEnergyRooms[key];
+      if (!this.memory.needEnergy) {
+        this.memory.needEnergy = true;
+        Memory.needEnergyRooms.push(this.name);
+        console.log('!!!', this.name, ' need energy !!!');
       }
+    } else if (this.memory.energyAvailableSum > 1000 * carryHelpInterval && this.storage) {
+      if (Memory.needEnergyRooms && Game.rooms[Memory.needEnergyRooms[0]]) {
+        this.checkRoleToSpawn('carry', 1, this.storage.id, this.name, undefined, Game.rooms[Memory.needEnergyRooms[0]].name);
+        console.log('!!!', this.name, ' give energy !!!');
+      }
+    } else if (this.memory.needEnergy) {
+      let key = _.findKey(Memory.needEnergyRooms, this.name);
+      delete Memory.needEnergyRooms[key];
+      this.memory.needEnergy = false;
     }
     this.memory.energyAvailableSum = 0;
   }
