@@ -21,7 +21,6 @@ brain.stats.add = function(roomName, path, newContent) {
     if (!Memory.stats[name].room) { Memory.stats[name].room = {}; }
     Memory.stats[name].room[roomName + path] = newContent;
 
-
     /**
     * let existContent = Memory.stats[name].room[roomName + path];
     * Memory.stats[name].room[roomName + path] = existContent ? _.concat(existContent,newContent) : newContent
