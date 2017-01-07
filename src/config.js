@@ -64,7 +64,8 @@ global.config = {
     ticksUntilHelpCheck: 200,
     maxHelpersAmount: 5,
     helpTreshold: 1000,
-    needTreshold: 500
+    needTreshold: 500,
+    maxDistance: 7
   },
 
   power: {

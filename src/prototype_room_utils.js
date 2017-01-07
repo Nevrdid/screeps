@@ -8,6 +8,14 @@ Room.prototype.sortMyRoomsByLinearDistance = function(target) {
   return _.sortBy(Memory.myRooms, sortByLinearDistance);
 };
 
+Room.prototype.sortNearestRoomUnder = function(path, limit) {
+  let sortByLinearDistance = (object) => {
+    let dist = Game.map.getRoomLinearDistance(this.name, object);
+    return dist <= limit ? dist : 1000;
+  };
+  return _.sortBy(Memory[path], sortByLinearDistance)[0];
+};
+
 Room.prototype.closestSpawn = function(target) {
   let pathLength = {};
   let roomsMy = this.sortMyRoomsByLinearDistance(target);
