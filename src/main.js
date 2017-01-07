@@ -6,7 +6,10 @@ require('prototype_creep_move');
 require('prototype_roomPosition');
 require('prototype_room_init');
 require('prototype_room_costmatrix');
+
+require('visualizer');
 require('screepsplus');
+require('visualizer');
 
 if (config.profiler.enabled) {
   try {
@@ -28,14 +31,15 @@ var main = function() {
   brain.handleNextroom();
   brain.handleSquadmanager();
   brain.handleIncomingTransactions();
-  //Memory.myRooms = _.create(Room.prototype, Memory.myRooms);
-  //thinking about save all rooms datas : -CPU => +Memory
 
   brain.stats.addRoot();
   Memory.myRooms = _.map(_.filter(Game.rooms, r => r.execute()), r => r.name);
   Memory.myRooms.forEach(function(roomName) {
     brain.stats.addRoom(roomName);
   });
+  if (config.visualizer.enabled && config.visualizer.refresh) {
+    visualizer.render();
+  }
   brain.stats.add('', '.cpu.used', Game.cpu.getUsed());
 };
 
