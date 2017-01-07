@@ -12,7 +12,6 @@ Room.prototype.nearestRoomName = function(roomsNames, limit) {
   let roomName = this.name;
   let sortByLinearDistance = function(object) {
     let dist = Game.map.getRoomLinearDistance(roomName, object);
-    console.log(dist);
     return dist <= limit ? dist : 1000;
   };
   return _.sortBy(roomsNames, sortByLinearDistance)[0];
