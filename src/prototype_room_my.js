@@ -339,13 +339,13 @@ Room.prototype.executeRoom = function() {
     this.memory.energyAvailableSum = 0;
 
   } else {
-    if (key >= 0 && this.hostile.length) {
+    if (key >= 0 && this.hostile) {
       delete Memory.needEnergyRooms[key];
 
     } else if (this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval) {
       if (key < 0) {
         Memory.needEnergyRooms.push(this.name);
-        console.log('!!!', this.name, ' need energy !!!');
+        console.log('---!!!---', this.name, ' need energy ---!!!---');
       }
 
     } else if (this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval &&
@@ -353,17 +353,17 @@ Room.prototype.executeRoom = function() {
       if (Memory.needEnergyRooms) {
 
         let nearestRoom = Memory.nearestRoom;
-        let targetKey = _.findKey(Memory.needEnergyRooms, nearestRoom);
+        let needHelp = _.find(Memory.needEnergyRooms, nearestRoom);
 
-        if (targetKey >= 0) {
-          nearestRoom = this.sortNearestRooms(Memory.needEnergyRooms, config.carryHelpes.maxDistance);
+        if (needHelp === undefined || !nearestRoom) {
+          nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.carryHelpers.maxDistance);
           Memory.nearestRoom = nearestRoom;
         }
-
-        if (!Game.rooms[nearestRoom].hostile.length) {
+        console.log(nearestRoom);
+        if (this.name !== nearestRoom && !Game.rooms[nearestRoom].hostile) {
           this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
             this.name, undefined, nearestRoom);
-          console.log('---!!! ', this.name, ' send energy too: ', nearestRoom, ' !!!---');
+          console.log('---!!! ', this.name, ' send energy to: ', nearestRoom, ' !!!---');
         }
       }
     } else if (key >= 0) { delete Memory.needEnergyRooms[key]; }
