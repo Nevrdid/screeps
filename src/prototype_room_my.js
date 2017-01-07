@@ -354,7 +354,9 @@ Room.prototype.executeRoom = function() {
   } else if (this.memory.energyAvailableSum === undefined) {
     this.memory.energyAvailableSum = 0;
   } else {
-    if (this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval) {
+    if (key >= 0 && this.hostile.length) {
+      delete Memory.needEnergyRooms[key];
+    } else if (this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval) {
       if (key < 0) {
         Memory.needEnergyRooms.push(this.name);
         console.log('!!!', this.name, ' need energy !!!');
