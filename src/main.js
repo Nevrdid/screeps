@@ -6,6 +6,7 @@ require('prototype_creep_move');
 require('prototype_roomPosition');
 require('prototype_room_init');
 require('prototype_room_costmatrix');
+
 require('visualizer');
 require('screepsplus');
 require('visualizer');
@@ -30,6 +31,7 @@ var main = function() {
   brain.handleNextroom();
   brain.handleSquadmanager();
   brain.handleIncomingTransactions();
+
   brain.stats.addRoot();
   Memory.myRooms = _.map(_.filter(Game.rooms, r => r.execute()), r => r.name);
   Memory.myRooms.forEach(function(roomName) {

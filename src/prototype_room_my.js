@@ -325,6 +325,34 @@ Room.prototype.executeRoom = function() {
       Game.notify(this.name + ' Under attack from ' + hostiles[0].owner.username + ' at ' + Game.time);
     }
   }
+  let carryHelpInterval = config.carryHelpers.ticksUntilHelpCheck;
+  let key = _.findKey(Memory.needEnergyRooms, this.name);
+
+  if (Game.time % carryHelpInterval) {
+    this.memory.energyAvailableSum += this.energyAvailable;
+  } else if (Memory.needEnergyRooms === undefined) {
+    Memory.needEnergyRooms = [];
+  } else if (this.memory.energyAvailableSum === undefined) {
+    this.memory.energyAvailableSum = 0;
+  } else {
+    if (key >= 0 && this.hostile.length) {
+      delete Memory.needEnergyRooms[key];
+    } else if (this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval) {
+      if (key < 0) {
+        Memory.needEnergyRooms.push(this.name);
+        console.log('!!!', this.name, ' need energy !!!');
+      }
+    } else if (this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval && this.storage) {
+      if (Memory.needEnergyRooms && Game.rooms[Memory.needEnergyRooms[0]] &&
+         !Game.rooms[Memory.needEnergyRooms[0]].hostile.length) {
+        this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id, this.name, undefined, Game.rooms[Memory.needEnergyRooms[0]].name);
+        console.log('!!!', this.name, ' give energy !!!');
+      }
+    } else if (key >= 0) {
+      delete Memory.needEnergyRooms[key];
+    }
+    this.memory.energyAvailableSum = 0;
+  }
 
   this.checkAndSpawnSourcer();
 

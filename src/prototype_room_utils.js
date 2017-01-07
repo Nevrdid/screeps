@@ -102,7 +102,7 @@ Room.prototype.checkAndSpawnSourcer = function() {
   }
 };
 
-Room.prototype.checkRoleToSpawn = function(role, amount, targetId, targetRoom, level) {
+Room.prototype.checkRoleToSpawn = function(role, amount, targetId, targetRoom, level, base) {
   if (targetRoom === undefined) {
     targetRoom = this.name;
   }
@@ -113,6 +113,7 @@ Room.prototype.checkRoleToSpawn = function(role, amount, targetId, targetRoom, l
   let creepMemory = {
     role: role,
     level: level,
+    base: base || undefined,
     routing: {
       targetRoom: targetRoom,
       targetId: targetId

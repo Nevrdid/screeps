@@ -1,6 +1,7 @@
 'use strict';
 
 /**
+
 * stats.add use for push anything into Memory.stats at a given place.
 *
 * @param {String} roomName Room name or '' if out of  Stats[Player].rooms .
@@ -64,6 +65,7 @@ brain.stats.addRoot = function() {
 };
 
 /**
+
 * stats.addRoom call stats.add with given values and given sub room path.
 *
 * @param {String} roomName The room which from we will save stats.
@@ -98,6 +100,7 @@ brain.stats.addRoom = function(roomName) {
 
   if (room.storage) {
     let storage = room.storage;
+
     brain.stats.add(roomName, '.storage', {
       energy: storage.store.energy,
       power: storage.store.power
@@ -105,6 +108,7 @@ brain.stats.addRoom = function(roomName) {
   }
   if (room.terminal) {
     let terminal = room.terminal;
+
     brain.stats.add(roomName, '.terminal', {
       energy: terminal.store.energy,
       minerals: _.sum(terminal.store) - terminal.store.energy

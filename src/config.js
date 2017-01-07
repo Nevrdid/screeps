@@ -60,6 +60,13 @@ global.config = {
     minDowngradPercent: 90
   },
 
+  carryHelpers: {
+    ticksUntilHelpCheck: 200,
+    maxHelpersAmount: 5,
+    helpTreshold: 1000,
+    needTreshold: 500
+  },
+
   power: {
     disabled: false,
     energyForCreeps: 800000,
