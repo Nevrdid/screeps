@@ -200,6 +200,48 @@ Room.prototype.handleScout = function() {
   }
 };
 
+Room.prototype.checkForEnergyTransfer = function() {
+  let carryHelpInterval = config.carryHelpers.ticksUntilHelpCheck;
+
+  if (Game.time % carryHelpInterval) {
+    this.memory.energyAvailableSum += this.energyAvailable;
+
+  } else if (this.memory.energyAvailableSum === undefined) {
+    this.memory.energyAvailableSum = 0;
+
+  } else {
+    let needEnergyRooms = Memory.needEnergyRooms || [];
+    Memory.needEnergyRooms = needEnergyRooms;
+    let needHelp = this.memory.needHelp;
+
+    if (!needHelp && this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval && !this.hostile) {
+      Memory.needEnergyRooms.push(this.name);
+      this.memory.needHelp = true;
+      this.log('---!!!---' + this.name + ' need energy ---!!!---');
+    } else if (needHelp) {
+      _.remove(Memory.needEnergyRooms, (r) => r === this.name);
+      delete Memory.rooms[this.name].needHelp;
+      Memory.needEnergyRooms = _.compact(Memory.needEnergyRooms);
+    } else if (Memory.needEnergyRooms) {
+      let nearestRoom = this.memory.nearestRoom;
+
+      if (!nearestRoom || !Memory.rooms[nearestRoom].needHelp) {
+        nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.carryHelpers.maxDistance);
+        this.memory.nearestRoom = nearestRoom;
+      }
+      if (nearestRoom && (nearestRoom !== this.name) && Game.rooms[nearestRoom] && this.storage &&
+        this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval &&
+        !Game.rooms[nearestRoom].hostile && !this.terminal) {
+
+        this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
+          this.name, undefined, nearestRoom);
+        this.log('---!!! ' + this.name + ' send energy to: ' + nearestRoom + ' !!!---');
+      }
+    }
+    this.memory.energyAvailableSum = 0;
+  }
+};
+
 Room.prototype.executeRoom = function() {
   this.buildBase();
 
@@ -326,54 +368,7 @@ Room.prototype.executeRoom = function() {
     }
   }
 
-  let carryHelpInterval = config.carryHelpers.ticksUntilHelpCheck;
-  if (!Memory.needEnergyRooms) {
-    Memory.needEnergyRooms = [];
-  }
-  let key = _.indexOf(Memory.needEnergyRooms, this.name);
-
-  if (Game.time % carryHelpInterval) {
-    this.memory.energyAvailableSum += this.energyAvailable;
-
-  } else if (this.memory.energyAvailableSum === undefined) {
-    this.memory.energyAvailableSum = 0;
-
-  } else {
-    let needHelp = Memory.needEnergyRooms[key];
-    this.log(needHelp);
-    if (needHelp && this.hostile) {
-      Memory.needEnergyRooms[key] = undefined;
-      Memory.needEnergyRooms = _.compact(Memory.needEnergyRooms);
-
-    } else if (this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval) {
-      if (!needHelp) {
-        Memory.needEnergyRooms.push(this.name);
-        this.log('---!!!---' + this.name + ' need energy ---!!!---');
-      }
-    } else if (needHelp) {
-      delete Memory.needEnergyRooms[this.name];
-    } else if (Memory.needEnergyRooms) {
-      let needHelp;
-      let nearestRoom = this.memory.nearestRoom;
-
-      if (!nearestRoom) {
-        nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.carryHelpers.maxDistance);
-        this.memory.nearestRoom = nearestRoom;
-      }
-      if ((nearestRoom !== this.name) && this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval &&
-        this.storage && nearestRoom) {
-        if (nearestRoom && Game.rooms[nearestRoom] && !Game.rooms[nearestRoom].hostile) {
-          this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
-            this.name, undefined, nearestRoom);
-          this.log('---!!! ' + this.name + ' send energy to: ' + nearestRoom + ' !!!---');
-        }
-      } else {
-        Memory.needEnergyRooms[key] = undefined;
-        Memory.needEnergyRooms = _.compact(Memory.needEnergyRooms);
-      }
-    }
-    this.memory.energyAvailableSum = 0;
-  }
+  this.helpHandle();
 
   this.checkAndSpawnSourcer();
 
