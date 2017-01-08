@@ -202,43 +202,42 @@ Room.prototype.handleScout = function() {
 
 Room.prototype.checkForEnergyTransfer = function() {
   let carryHelpInterval = config.carryHelpers.ticksUntilHelpCheck;
-
   if (Game.time % carryHelpInterval) {
     this.memory.energyAvailableSum += this.energyAvailable;
+    return;
+  }
+  this.memory.energyAvailableSum = 0;
 
-  } else if (this.memory.energyAvailableSum === undefined) {
-    this.memory.energyAvailableSum = 0;
+  Memory.needEnergyRooms = Memory.needEnergyRooms || [];
+  this.memory.energyAvailableSum = this.memory.energyAvailableSum || 0;
+  let needHelp = this.memory.needHelp;
 
-  } else {
-    let needEnergyRooms = Memory.needEnergyRooms || [];
-    Memory.needEnergyRooms = needEnergyRooms;
-    let needHelp = this.memory.needHelp;
+  if (!needHelp && this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval && !this.hostile && Game.spawns[this.name]) {
+    Memory.needEnergyRooms.push(this.name);
+    this.memory.needHelp = true;
+    return '---!!!---' + this.name + ' need energy ---!!!---';
+  } else if (needHelp) {
+    _.remove(Memory.needEnergyRooms, (r) => r === this.name);
+    delete Memory.rooms[this.name].needHelp;
+  } else if (Memory.needEnergyRooms) {
+    let nearestRoom = this.memory.nearestRoom;
 
-    if (!needHelp && this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval && !this.hostile) {
-      Memory.needEnergyRooms.push(this.name);
-      this.memory.needHelp = true;
-      this.log('---!!!---' + this.name + ' need energy ---!!!---');
-    } else if (needHelp) {
-      _.remove(Memory.needEnergyRooms, (r) => r === this.name);
-      delete Memory.rooms[this.name].needHelp;
-      Memory.needEnergyRooms = _.compact(Memory.needEnergyRooms);
-    } else if (Memory.needEnergyRooms) {
-      let nearestRoom = this.memory.nearestRoom;
-
-      if (!nearestRoom || !Memory.rooms[nearestRoom].needHelp) {
-        nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.carryHelpers.maxDistance);
-        this.memory.nearestRoom = nearestRoom;
-      }
-      if (nearestRoom && (nearestRoom !== this.name) && Game.rooms[nearestRoom] && this.storage &&
-        this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval &&
-        !Game.rooms[nearestRoom].hostile && !this.terminal) {
-
-        this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
-          this.name, undefined, nearestRoom);
-        this.log('---!!! ' + this.name + ' send energy to: ' + nearestRoom + ' !!!---');
-      }
+    if (!nearestRoom || !Memory.rooms[nearestRoom].needHelp) {
+      nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.carryHelpers.maxDistance);
+      this.memory.nearestRoom = nearestRoom;
     }
-    this.memory.energyAvailableSum = 0;
+    if (!Game.rooms[nearestRoom] || !Memory.rooms[nearestRoom].needHelp) {
+      _.remove(Memory.needEnergyRooms, (r) => r === nearestRoom);
+    }
+    if (nearestRoom && (nearestRoom !== this.name) && Game.rooms[nearestRoom] && this.storage &&
+    this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval &&
+    !Game.rooms[nearestRoom].hostile && !this.terminal) {
+
+      this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
+        this.name, undefined, nearestRoom);
+
+      return '---!!! ' + this.name + ' send energy to: ' + nearestRoom + ' !!!---';
+    }
   }
 };
 
@@ -368,7 +367,7 @@ Room.prototype.executeRoom = function() {
     }
   }
 
-  this.helpHandle();
+  this.log(this.checkForEnergyTransfer());
 
   this.checkAndSpawnSourcer();
 
