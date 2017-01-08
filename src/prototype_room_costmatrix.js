@@ -1,5 +1,45 @@
 'use strict';
 
+Room.prototype.getCostMatrixCallback = function(end, excludeStructures) {
+  let callback = this.getMatrixCallback(end);
+  if (cache.rooms[this.name] && cache.rooms[this.name].costMatrix && cache.rooms[this.name].costMatrix.base) {
+    let room = this;
+    callback = function(end) {
+      let callbackInner = function(roomName) {
+        let costMatrix = this.getMemoryCostMatrix();
+        // TODO the ramparts could be within existing walls (at least when converging to the newmovesim
+        costMatrix.set(end.x, end.y, 0);
+
+        if (excludeStructures) {
+          // TODO excluding structures, for the case where the spawn is in the wrong spot (I guess this can be handled better)
+          let structures = room.find(FIND_STRUCTURES, {
+            filter: function(object) {
+              if (object.structureType == STRUCTURE_RAMPART) {
+                return false;
+              }
+              if (object.structureType == STRUCTURE_ROAD) {
+                return false;
+              }
+              if (object.structureType == STRUCTURE_CONTAINER) {
+                return false;
+              }
+              return true;
+            }
+          });
+          for (let structure of structures) {
+            costMatrix.set(structure.pos.x, structure.pos.y, config.layout.structureAvoid);
+          }
+        }
+        return costMatrix;
+      };
+      return callbackInner;
+    };
+  } else {
+    this.log('getCostMatrixCallback updatePosition');
+    this.updatePosition();
+  }
+};
+
 Room.prototype.getCostMatrix = function() {
   let costMatrix = new PathFinder.CostMatrix();
   // Keep distance to walls
