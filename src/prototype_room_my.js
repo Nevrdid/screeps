@@ -203,18 +203,18 @@ Room.prototype.handleScout = function() {
 Room.prototype.checkForEnergyTransfer = function() {
   let carryHelpInterval = config.carryHelpers.ticksUntilHelpCheck;
   if (Game.time % carryHelpInterval) {
+
     let factor = config.carryHelpers.factor;
     this.memory.energyAvailable = (1 - factor) * this.memory.energyAvailable + (factor) * this.energyAvailable;
-    this.memory.energyAvailableSum += this.energyAvailable;
+    this.memory.energyAvailableSum += this.memory.energyAvailable;
     return;
   }
-  this.memory.energyAvailableSum = 0;
 
   Memory.needEnergyRooms = Memory.needEnergyRooms || [];
   this.memory.energyAvailableSum = this.memory.energyAvailableSum || 0;
   let needHelp = this.memory.needHelp;
-
-  if (!needHelp && this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval && !this.hostile && Game.spawns[this.name]) {
+  if (!needHelp && this.memory.energyAvailableSum < config.carryHelpers.needTreshold * carryHelpInterval && !this.hostile && Game.rooms[this.name].find(STRUCTURE_SPAWN)) {
+    this.memory.energyAvailableSum = 0;
     Memory.needEnergyRooms.push(this.name);
     this.memory.needHelp = true;
     return '---!!!---' + this.name + ' need energy ---!!!---';
@@ -237,12 +237,12 @@ Room.prototype.checkForEnergyTransfer = function() {
 
       this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
         this.name, undefined, nearestRoom);
-
+      this.memory.energyAvailableSum = 0;
       return '---!!! ' + this.name + ' send energy to: ' + nearestRoom + ' !!!---';
     }
+    this.memory.energyAvailableSum = 0;
   }
 };
-
 Room.prototype.executeRoom = function() {
   this.buildBase();
 
