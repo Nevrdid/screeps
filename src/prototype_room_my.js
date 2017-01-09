@@ -203,6 +203,8 @@ Room.prototype.handleScout = function() {
 Room.prototype.checkForEnergyTransfer = function() {
   let carryHelpInterval = config.carryHelpers.ticksUntilHelpCheck;
   if (Game.time % carryHelpInterval) {
+    let factor = config.carryHelpers.factor;
+    this.memory.energyAvailable = (1 - factor) * this.memory.energyAvailable + (factor) * this.energyAvailable;
     this.memory.energyAvailableSum += this.energyAvailable;
     return;
   }
@@ -230,8 +232,8 @@ Room.prototype.checkForEnergyTransfer = function() {
       _.remove(Memory.needEnergyRooms, (r) => r === nearestRoom);
     }
     if (nearestRoom && (nearestRoom !== this.name) && Game.rooms[nearestRoom] && this.storage &&
-    this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval &&
-    !Game.rooms[nearestRoom].hostile && !this.terminal) {
+      this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * carryHelpInterval &&
+      !Game.rooms[nearestRoom].hostile && !this.terminal) {
 
       this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
         this.name, undefined, nearestRoom);
@@ -367,7 +369,8 @@ Room.prototype.executeRoom = function() {
     }
   }
 
-  this.log(this.checkForEnergyTransfer());
+  let transferLog = this.checkForEnergyTransfer();
+  if (transferLog) { this.log(transferLog); }
 
   this.checkAndSpawnSourcer();
 
