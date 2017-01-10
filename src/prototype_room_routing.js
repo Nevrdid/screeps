@@ -157,7 +157,6 @@ Room.prototype.updatePosition = function() {
     }
 
     this.setFillerArea(storagePos, costMatrixBase, route);
-
   }
 
   this.memory.costMatrix.base = costMatrixBase.serialize();
@@ -172,7 +171,7 @@ Room.prototype.getCreepPositionForId = function(to) {
 
   let target = Game.getObjectById(to);
   if (target === null) {
-    this.log('getCreepPositionForId: No object: ' + to);
+    // this.log('getCreepPositionForId: No object: ' + to);
     return;
   }
   this.memory.position = this.memory.position || {
@@ -258,7 +257,7 @@ Room.prototype.getPath = function(route, routePos, startId, targetId, fixed) {
   if (!this.getMemoryPath(pathName)) {
     let path = this.buildPath(route, routePos, from, to);
     if (!path) {
-      this.log('getPath: No path');
+      // this.log('getPath: No path');
       return;
     }
     this.setMemoryPath(pathName, path, fixed);
@@ -359,5 +358,4 @@ Room.prototype.getMatrixCallback = function(end) {
   };
 
   return callback;
-
 };

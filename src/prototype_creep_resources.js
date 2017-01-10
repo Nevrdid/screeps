@@ -70,7 +70,7 @@ Creep.prototype.checkForTransfer = function(direction) {
       if (this.room.name == this.memory.routing.targetRoom) {
         carryPercentage = 0.8;
       }
-      if (this.room.name == this.memory.base) {
+      if (this.inBase()) {
         carryPercentage = 0.0;
       }
       return otherCreep.carry.energy + _.sum(this.carry) > carryPercentage * this.carryCapacity;
@@ -82,7 +82,7 @@ Creep.prototype.checkForTransfer = function(direction) {
 };
 
 Creep.prototype.pickupWhileMoving = function(reverse) {
-  if (this.room.name == this.memory.base && this.memory.routing.pathPos < 2) {
+  if (this.inBase() && this.memory.routing.pathPos < 2) {
     return reverse;
   }
 
@@ -173,7 +173,6 @@ Creep.prototype.handleUpgrader = function() {
     }
     let word = Game.time % sentence.length;
     creep.say(sentence[word], true);
-
   };
   say(this);
   this.spawnReplacement(1);
@@ -209,7 +208,7 @@ Creep.prototype.handleUpgrader = function() {
 };
 
 Creep.prototype.buildContainer = function() {
-  if (this.room.name == this.memory.base) {
+  if (this.inBase()) {
     return false;
   }
   // TODO Not in base room
@@ -329,6 +328,10 @@ Creep.prototype.transferToCreep = function(direction) {
     for (var name in creeps) {
       let otherCreep = creeps[name];
       if (!Game.creeps[otherCreep.name]) {
+        continue;
+      }
+      // don't transfer to extractor, fixes full terminal with 80% energy?
+      if (Game.creeps[otherCreep.name].memory.role == 'extractor') {
         continue;
       }
       // Do we want this?
@@ -513,7 +516,6 @@ Creep.prototype.getEnergy = function() {
         reusePath: 5,
         ignoreCreeps: true,
         costCallback: this.room.getAvoids(this.room)
-
       });
       return true;
     } else {
@@ -703,7 +705,6 @@ Creep.prototype.construct = function() {
     }
   }
   return true;
-
 };
 
 Creep.prototype.transferEnergyMy = function() {
@@ -767,13 +768,8 @@ Creep.prototype.transferEnergyMy = function() {
     if (search.incomplete) {
       this.say('tr:incompl', true);
       if (config.path.pathfindIncomplete) {
-        let search = PathFinder.search(
-          this.pos, {
-            pos: target.pos,
-            range: 1
-          }, {
-            maxRooms: 1
-          });
+        this.moveTo(target.pos);
+        return true;
       }
       let returnCode = this.move(this.pos.getDirectionTo(search.path[0]));
     } else {
@@ -800,7 +796,7 @@ Creep.prototype.handleReserver = function() {
   this.spawnReplacement(1);
 
   let callCleaner = function(creep) {
-    if (creep.memory.base == creep.room.name) {
+    if (creep.inBase()) {
       return false;
     }
 
@@ -813,7 +809,6 @@ Creep.prototype.handleReserver = function() {
     }
 
     if (config.creep.structurer) {
-
       var structurers = creep.room.find(FIND_MY_CREEPS, {
         filter: function(object) {
           return object.memory.role == 'structurer';
@@ -840,7 +835,7 @@ Creep.prototype.handleReserver = function() {
 
       if (resource_structures.length > 0 && !creep.room.controller.my) {
         creep.log('Call structurer from ' + creep.memory.base + ' because of ' + resource_structures[0].structureType);
-        Game.rooms[creep.memory.base].checkRoleToSpawn('structurer', 1, undefined, this.name);
+        Game.rooms[creep.memory.base].checkRoleToSpawn('structurer', 1, undefined, creep.room.name);
         return true;
       }
     }
@@ -911,7 +906,6 @@ Creep.prototype.handleReserver = function() {
         ticksToLive: this.ticksToLive,
         reservation: this.room.controller.reservation.ticksToEnd
       };
-
     }
     this.memory.targetReached = true;
     this.setNextSpawn();
@@ -927,5 +921,4 @@ Creep.prototype.handleReserver = function() {
   this.log('reserver: ' + return_code);
 
   return true;
-
 };

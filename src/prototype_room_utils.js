@@ -63,6 +63,8 @@ Room.prototype.splitRoomName = function() {
 };
 
 Room.prototype.inQueue = function(spawn) {
+  this.memory.queue = this.memory.queue || [];
+
   for (var item of this.memory.queue) {
     if (item.role != spawn.role) {
       continue;

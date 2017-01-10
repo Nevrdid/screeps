@@ -491,11 +491,9 @@ Room.prototype.reviveRoom = function() {
     this.controller.ticksToDowngrade >
     (CONTROLLER_DOWNGRADE[this.controller.level] * config.nextRoom.minDowngradPercent / 100) &&
     this.energyCapacityAvailable > config.nextRoom.minEnergyForActive) {
-
     this.memory.active = true;
     return false;
   } else if (this.controller.level > 1 && nextRoomers >= config.nextRoom.numberOfNextroomers) {
-    console.log('Enough nextroomers');
     return false;
   }
 

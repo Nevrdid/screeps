@@ -47,24 +47,14 @@ Room.prototype.spawnCreateCreep = function(role, heal, level, squad, routing, ba
       buildRoad: unit.buildRoad,
       routing: routing
     };
-    //     if (memory.role == 'reserver') {
-    //       console.log('Spawning reserver: ' + JSON.stringify(memory));
-    //     }
     var returnCode = spawn.createCreep(partConfig, name, memory);
 
     if (returnCode != name) {
       continue;
     }
-
-    //    this.log('Spawned ' + name);
-
-    if (memory.role == 'reserver') {
-      this.log('Spawning ' + name.rpad(' ', 20) + ' ' + JSON.stringify(memory));
-    }
     return true;
   }
   return false;
-
 };
 
 Room.prototype.spawnCheckForCreate = function(creepsConfig) {
