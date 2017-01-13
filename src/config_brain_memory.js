@@ -44,6 +44,10 @@ brain.prepareMemory = function() {
   // Cleanup memory
   for (let name in Memory.creeps) {
     if (!Game.creeps[name]) {
+      let role = Memory.creeps[name].role;
+      let previousAmount = Memory.stats.creeps[role].amount;
+      let amount = previousAmount ? 0 : previousAmount - 1;
+      brain.stats.add('', 'creeps.' + role, amount);
       if ((name.startsWith('reserver') && Memory.creeps[name].born < (Game.time - CREEP_CLAIM_LIFE_TIME)) || Memory.creeps[name].born < (Game.time - CREEP_LIFE_TIME)) {
         delete Memory.creeps[name];
       } else {
