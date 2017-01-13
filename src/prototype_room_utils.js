@@ -23,11 +23,11 @@ Room.prototype.getsourcesPlaces = function(sId = -1, pId = -1) {
   if (!this.sourcesPlaces) {
     let s = 0;
     _.forEach(sources, function(source) {
-      places = Game.rooms[this.name].lookForAtArea(LOOK_TERRAIN ,
-      source.y - 1,
-      source.x - 1,
-      source.y + 1,
-      source.x + 1, true);
+      places = Game.rooms[this.name].lookForAtArea(LOOK_TERRAIN,
+        source.y - 1,
+        source.x - 1,
+        source.y + 1,
+        source.x + 1, true);
       places = _.filter(places, (object) => (object.terrain === 'swamp' || object.terrain === 'plain')).length;
       for (let p in places) {
         this.memory.sources[s].place[p].x = places[p].pos.x;
