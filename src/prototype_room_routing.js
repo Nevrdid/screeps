@@ -207,7 +207,7 @@ Room.prototype.findRoute = function(from, to) {
 
     return 1;
   };
-  return Game.map.findRoute(from.to, {
+  return Game.map.findRoute(from, to, {
     routeCallback: routeCallback
   });
 };
