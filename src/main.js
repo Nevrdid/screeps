@@ -19,6 +19,7 @@ if (config.profiler.enabled) {
     config.profiler.enabled = false;
   }
 }
+brain.stats.init();
 
 var main = function() {
   if (Game.cpu.bucket < Game.cpu.tickLimit * 2) {
@@ -33,9 +34,7 @@ var main = function() {
 
   brain.stats.addRoot();
   Memory.myRooms = _.map(_.filter(Game.rooms, r => r.execute()), r => r.name);
-  Memory.myRooms.forEach(function(roomName) {
-    brain.stats.addRoom(roomName);
-  });
+
   if (config.visualizer.enabled && config.visualizer.refresh) {
     visualizer.render();
   }

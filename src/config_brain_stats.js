@@ -10,26 +10,30 @@
  */
 
 brain.stats.add = function(roomName, path, newContent) {
-  if (!config.stats.enabled) {
+  if (!config.stats.enabled || Game.time % 3) {
     return false;
   }
-  if (!Memory.stats) {
-    Memory.stats = {};
-  }
-  var name = Memory.username || Game.rooms[roomName].controller.owner || 'default';
+
+  var name = Memory.username || Game.rooms[roomName].controller.owner;
   Memory.username = name;
+  if (!Memory.stats[name].room[roomName]) {
+    Memory.stats[name].room[roomName] = {};
+  }
+  if (!Memory.stats[name].room[roomName + path]) {
+    Memory.stats[name].room[roomName + path] = {};
+  }
   if (newContent && roomName) {
-    if (!Memory.stats[name].room) {
-      Memory.stats[name].room = {};
+    if (!Memory.stats[name].room[roomName]) {
+      Memory.stats[name].room[roomName] = {};
     }
-    Memory.stats[name].room[roomName + path] = newContent;
+    Memory.stats[name].room[roomName + path] = _.merge(Memory.stats[name].room[roomName + path], newContent);
 
     /**
      * let existContent = Memory.stats[name].room[roomName + path];
      * Memory.stats[name].room[roomName + path] = existContent ? _.concat(existContent,newContent) : newContent
      */
   } else if (newContent) {
-    Memory.stats[name + path] = newContent;
+    Memory.stats[name + path] = _.merge(Memory.stats[name + path], newContent);
     /**
      * let existContent = Memory.stats[name + path];
      * Memory.stats[name + path] = existContent ? _.concat(existContent,newContent) : newContent;
@@ -42,7 +46,7 @@ brain.stats.add = function(roomName, path, newContent) {
  *
  */
 brain.stats.addRoot = function() {
-  if (!config.stats.enabled) {
+  if (!config.stats.enabled || Game.time % 3) {
     return false;
   }
   brain.stats.add('', '', {
@@ -58,9 +62,6 @@ brain.stats.addRoot = function() {
       level: Game.gcl.level,
       progress: Game.gcl.progress,
       progressTotal: Game.gcl.progressTotal
-    },
-    rooms: {
-      available: Game.rooms.length
     }
   });
   return true;
@@ -72,8 +73,8 @@ brain.stats.addRoot = function() {
  * @param {String} roomName The room which from we will save stats.
  *
  */
-brain.stats.addRoom = function(roomName) {
-  if (!config.stats.enabled) {
+brain.stats.addRoom = function(roomName, previousCpu) {
+  if (!config.stats.enabled || Game.time % 3) {
     return false;
   }
 
@@ -100,7 +101,7 @@ brain.stats.addRoom = function(roomName) {
       into: room.find(FIND_CREEPS).length,
       queue: room.memory.queue.length
     },
-    cpu: Game.cpu.getUsed()
+    cpu: Game.cpu.getUsed() - previousCpu
   });
 
   if (room.storage) {
@@ -120,4 +121,17 @@ brain.stats.addRoom = function(roomName) {
     });
   }
   return true;
+};
+brain.stats.init = function() {
+  var name = Memory.username || _.find(Game.spawns, 'my').owner;
+  Memory.stats = {
+    [name]: {
+      roles: {},
+      room: {}
+    }
+  };
+  let rolesNames = _(Game.creeps).map(c => c.memory.role).countBy(function(r) { return r; }).value();
+  _.forEach(rolesNames, function(element, index) {
+    Memory.stats[name].roles[index] = element;
+  });
 };

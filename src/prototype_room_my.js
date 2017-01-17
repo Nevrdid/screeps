@@ -201,9 +201,7 @@ Room.prototype.handleScout = function() {
 };
 
 Room.prototype.checkNeedHelp = function() {
-
-  let needHelp = this.memory.energyAvailableSum < config.carryHelpers.needTreshold * config.carryHelpers.ticksUntilHelpCheck &&
-    !this.hostile;
+  let needHelp = this.memory.energyAvailableSum < config.carryHelpers.needTreshold * config.carryHelpers.ticksUntilHelpCheck; //&& !this.hostile;
   let oldNeedHelp = this.memory.needHelp;
   if (needHelp) {
     if (!oldNeedHelp) {
@@ -238,8 +236,8 @@ Room.prototype.checkCanHelp = function() {
   let nearestRoomObj = Game.rooms[nearestRoom];
 
   let canHelp = this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * config.carryHelpers.ticksUntilHelpCheck &&
-    nearestRoom !== this.name && nearestRoomObj && this.storage &&
-    !nearestRoomObj.hostile && !nearestRoomObj.terminal;
+    nearestRoom !== this.name && nearestRoomObj && this.storage && //!nearestRoomObj.hostile &&
+    !nearestRoomObj.terminal;
   if (canHelp) {
     this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
       this.name, undefined, nearestRoom);
@@ -271,6 +269,7 @@ Room.prototype.checkForEnergyTransfer = function() {
 };
 
 Room.prototype.executeRoom = function() {
+  let cpuUsed = Game.cpu.getUsed();
   this.buildBase();
   this.memory.attackTimer = this.memory.attackTimer || 0;
 
@@ -508,6 +507,7 @@ Room.prototype.executeRoom = function() {
   this.spawnCheckForCreate(creepsConfig);
 
   this.handleMarket();
+  brain.stats.addRoom(this.name, cpuUsed);
   return true;
 };
 
@@ -541,7 +541,7 @@ Room.prototype.reviveRoom = function() {
     this.log('Increase idiot by subscription token');
     let idiotCreeps = this.find(FIND_HOSTILE_CREEPS, {
       filter: function(object) {
-        return object.owner.username != 'Invader';
+        return object.owner.username !== 'Invader';
       }
     });
     if (idiotCreeps.length > 0) {
