@@ -36,11 +36,13 @@ roles.carry.preMove = function(creep, directions) {
 
       var source = creep.room.memory.position.creep[targetId];
       // TODO better the position from the room memory
-      if (source !== null) {
-        let returnCode = creep.moveTo(Game.getObjectById(targetId));
-        if (creep.pos.getRangeTo(Game.getObjectById(targetId)) > 1) {
-          return true;
-        }
+      let target = source ? source : Game.getObjectById(targetId).pos;
+      if (!(target instanceof RoomPosition)) {
+        target.prototype = Object.create(RoomPosition.prototype, target);
+      }
+      let returnCode = creep.moveTo(target);
+      if (creep.pos.getRangeTo(target) > 1) {
+        return true;
       }
     }
   }
