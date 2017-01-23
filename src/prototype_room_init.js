@@ -1,5 +1,4 @@
 'use strict';
-
 Room.prototype.setTowerFiller = function() {
   let exits = _.map(Game.map.describeExits(this.name));
 
@@ -14,7 +13,7 @@ Room.prototype.setTowerFiller = function() {
       let linkSet = false;
       let towerFillerSet = false;
       let positionsFound = false;
-      let path = this.getMemoryPath('pathStart' + '-' + roomName);
+      let path = this.getMemoryPath('pathStart-' + roomName);
       for (let pathIndex = path.length - 1; pathIndex >= 1; pathIndex--) {
         let posPath = path[pathIndex];
         let posPathObject = new RoomPosition(posPath.x, posPath.y, posPath.roomName);
@@ -37,7 +36,7 @@ Room.prototype.setTowerFiller = function() {
         }
 
         let terrain = pos.lookFor(LOOK_TERRAIN)[0];
-        if (terrain == 'wall') {
+        if (terrain === 'wall') {
           break;
         }
 
@@ -218,7 +217,7 @@ let buildCostMatrix = function(room) {
     let start = exits[startDir];
     for (let endDir in exits) {
       let end = exits[endDir];
-      if (start == end) {
+      if (start === end) {
         continue;
       }
       let route = [{
@@ -270,7 +269,7 @@ Room.prototype.setup = function() {
         for (let y = -1; y < 2; y++) {
           let wall = new RoomPosition(pos.x + x, pos.y + y, pos.roomName);
           let terrains = wall.lookFor(LOOK_TERRAIN);
-          if (terrains == 'wall') {
+          if (terrains === 'wall') {
             valueAdd *= 0.5; // TODO some factor
           }
         }
@@ -286,9 +285,45 @@ Room.prototype.setup = function() {
   });
   let paths_sorted = _.sortBy(paths_controller, sorter);
   let path = this.getMemoryPath(paths_sorted[paths_sorted.length - 1].name);
+  let pos = {};
+  function aroundLength(pos) {
+    let near = pos.findNearPosition();
+    return near ? near.length : 0;
+  }
+  for (let I in path) {
+    if (I > path.length - 3) {
+      break;
+    }
+    switch ([path[I].x - path[I + 2].x, path[I].y - path[I + 2].y]) {
+      case [2,0]:
+        pos[2] = new RoomPosition(path[I].x + 1, path[I].y - 1, this.roomName);
+        pos[0] = new RoomPosition(path[I].x + 1, path[I].y, this.roomName);
+        pos[1] = new RoomPosition(path[I].x + 1, path[I].y + 1, this.roomName);
+        break;
+      case [-2,0]:
+        pos[0] = new RoomPosition(path[I].x - 1, path[I].y - 1, this.roomName);
+        pos[1] = new RoomPosition(path[I].x - 1, path[I].y, this.roomName);
+        pos[2] = new RoomPosition(path[I].x - 1, path[I].y + 1, this.roomName);
+        break;
+      case [0,2]:
+        pos[0] = new RoomPosition(path[I].x - 1, path[I].y + 1, this.roomName);
+        pos[1] = new RoomPosition(path[I].x, path[I].y + 1, this.roomName);
+        pos[2] = new RoomPosition(path[I].x + 1, path[I].y + 1, this.roomName);
+        break;
+      case [0,-2]:
+        pos[0] = new RoomPosition(path[I].x - 1, path[I].y - 1, this.roomName);
+        pos[1] = new RoomPosition(path[I].x, path[I].y - 1, this.roomName);
+        pos[2] = new RoomPosition(path[I].x + 1, path[I].y - 1, this.roomName);
+        break;
+      default:
+        continue;
+    }
+    let target = _.maxBy(pos, aroundLength);
+    path[I + 1] = target;
+  }
   let pathI = setStructures(this, path, costMatrixBase);
   console.log('path: ' + path.name + ' pathI: ' + pathI + ' length: ' + path.length);
-  if (pathI == -1) {
+  if (pathI === -1) {
     pathI = path.length - 1;
   }
 

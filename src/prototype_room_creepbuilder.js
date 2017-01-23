@@ -26,8 +26,6 @@ Room.prototype.spawnCreateCreep = function(creep) {
   if (!partConfig) {
     return;
   }
-  var partConfig = unit.getPartConfig(this, energy, heal).slice(0, MAX_CREEP_SIZE);
-  var spawns = this.find(FIND_MY_SPAWNS);
 
   for (var spawnName in spawns) {
     var spawn = spawns[spawnName];
@@ -59,7 +57,7 @@ Room.prototype.spawnCreateCreep = function(creep) {
       continue;
     }
     if (config.stats.enabled) {
-    let userName = Memory.username || _.find(Game.spawns, 'owner').owner;
+      let userName = Memory.username || _.find(Game.spawns, 'owner').owner;
       Memory.stats = Memory.stats || {};
       Memory.stats[userName].roles = Memory.stats[userName].roles || {};
       let roleStat = Memory.stats[userName].roles[role];
