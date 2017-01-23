@@ -81,9 +81,7 @@ Creep.prototype.handle = function() {
     this.log(message);
     Game.notify(message, 30);
   } finally {
-    if (this.memory.last === undefined) {
-      this.memory.last = {};
-    }
+    this.memory.last = this.memory.last || {};
     let last = this.memory.last;
     this.memory.last = {
       pos1: this.pos,
