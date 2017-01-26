@@ -87,7 +87,7 @@ brain.prepareMemory = function() {
       for (var id in Memory.myRooms) {
         let roomName = Memory.myRooms[id];
         let room = Game.rooms[roomName];
-        let roomStorage = room && room.storage
+        let roomStorage = room && room.storage;
         if (!roomStorage) {
           storage.no += roomName + ' ';
           continue;
