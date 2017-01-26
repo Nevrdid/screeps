@@ -1,12 +1,11 @@
 'use strict';
 
 brain.prepareMemory = function() {
+  Memory.username = Memory.username || _.find(Game.spawns, 'owner').owner.username;
+  Memory.constructionSites = Memory.constructionSites || {};
   Memory.mineralSystemPrice = {};
   Memory.ordersBuy = _.filter(Game.market.getAllOrders(), function(object) {
-    if (object.type != ORDER_BUY) {
-      return false;
-    }
-    if (object.resourceType == 'token') {
+    if (object.type != ORDER_BUY || object.resourceType == 'token') {
       return false;
     }
     var patt = /([A-Z]+)(\d+)([A-Z]+)(\d+)/;
@@ -16,80 +15,37 @@ brain.prepareMemory = function() {
     }
     return true;
   });
-
-  if (!Memory.constructionSites) {
-    Memory.constructionSites = {};
-  }
-
   if (Game.time % config.constructionSite.maxIdleTime === 0) {
-    let constructionSites = {};
     for (let csId in Game.constructionSites) {
       let cs = Game.constructionSites[csId];
       let csMem = Memory.constructionSites[csId];
-      if (csMem) {
-        if (csMem == cs.progress) {
-          console.log(csId + ' constructionSite too old');
-          let csObject = Game.getObjectById(csId);
-          let returnCode = csObject.remove();
-          console.log('Delete constructionSite: ' + returnCode);
-          continue;
-        }
+      if (csMem && csMem === cs.progress) {
+        let csObject = Game.getObjectById(csId);
+        let returnCode = csObject.remove();
+        console.log('Delete constructionSite: ' + csId + '- - - return: ' + returnCode);
+        continue;
       }
-      constructionSites[csId] = cs.progress;
+      Memory.constructionSites[csId] = cs.progress;
     }
-    Memory.constructionSites = constructionSites;
-    console.log('Known constructionSites: ' + Object.keys(constructionSites).length);
+    console.log('Known constructionSites: ' + Object.keys(Memory.constructionSites).length);
   }
-
-  var userName = Memory.username || _.find(Game.spawns, 'owner').owner;
-  Memory.username = userName;
   // Cleanup memory
-  for (let name in Memory.creeps) {
-    if (!Game.creeps[name]) {
-      let role = Memory.creeps[name].role;
+  for (let creepName in Memory.creeps) {
+    if (Game.creeps[creepName]) {continue;}
 
-      if (config.stats.enabled && userName && Memory.stats && Memory.stats[userName].roles) {
-        let roleStat = Memory.stats[userName].roles[role];
-        let previousAmount = roleStat ? roleStat : 0;
-        let amount = previousAmount > 0 ? previousAmount - 1 : 0;
-        Memory.stats[userName].roles[role] = amount;
-      }
-
-      if ((name.startsWith('reserver') && Memory.creeps[name].born < (Game.time - CREEP_CLAIM_LIFE_TIME)) || Memory.creeps[name].born < (Game.time - CREEP_LIFE_TIME)) {
-        delete Memory.creeps[name];
-      } else {
-        var creepMemory = Memory.creeps[name];
-        if (creepMemory.killed) {
-          delete Memory.creeps[name];
-          continue;
-        }
-
-        console.log(name, 'Not in Game.creeps', Game.time - creepMemory.born, Memory.creeps[name].base);
-        if (Game.time - creepMemory.born < 20) {
-          continue;
-        }
-        if (!creepMemory.role) {
-          delete Memory.creeps[name];
-          continue;
-        }
-        try {
-          let unit = roles[creepMemory.role];
-          if (!unit) {
-            delete Memory.creeps[name];
-          }
-          if (unit.died) {
-            unit.died(name, creepMemory);
-            //            delete Memory.creeps[name];
-          } else {
-            delete Memory.creeps[name];
-          }
-        } catch (e) {
-          delete Memory.creeps[name];
-        }
-      }
+    var creepMemory = Memory.creeps[creepName];
+    let role = creepMemory.role;
+    let unit = role && roles[role];
+    let diedFunction = unit && unit.died;
+    let age = Game.time - creepMemory.born;
+    let reserverEndLife = creepName.startsWith('reserver') && Game.time - creepMemory.born < CREEP_CLAIM_LIFE_TIME;
+    brain.stats.decreaseRole(role);
+    console.log(creepName, 'Not in Game.creeps', age, Memory.creeps[creepName].base);
+    if (diedFunction && age < CREEP_LIFE_TIME && !reserverEndLife && !creepMemory.killed) {
+      diedFunction(creepName, creepMemory);
     }
+    delete Memory.creeps[creepName];
   }
-
   if (Game.time % 1500 === 0) {
     for (let squadId in Memory.squads) {
       let squad = Memory.squads[squadId];
@@ -101,18 +57,14 @@ brain.prepareMemory = function() {
   }
 
   if (Game.time % 300 === 0) {
-    for (let name in Memory.rooms) {
+    for (let roomName in Memory.rooms) {
       // Check for reserved rooms
-      let memory = Memory.rooms[name];
-      if (!Memory.rooms[name].lastSeen) {
-        //        console.log('Deleting ' + name + ' from memory no `last_seen` value');
-        delete Memory.rooms[name];
-        continue;
-      }
-      if (Memory.rooms[name].lastSeen < config.room.lastSeenThreshold) {
-        console.log('Deleting ' + name + ' from memory older than 100000');
-        //delete Memory.rooms[name];
-        continue;
+      let roomMemory = Memory.rooms[roomName];
+      let lastSeen = roomMemory.lastSeen;
+      let timeSinceLost = lastSeen ? Game.time - lastSeen : -1;
+      if (timeSinceLost === -1 || timeSinceLost > config.room.lastSeenThreshold) {
+        console.log('Deleting ${romName} from memory. timeSinceLost: ', timeSinceLost);
+        delete Memory.rooms[roomName];
       }
     }
   }
@@ -128,41 +80,42 @@ brain.prepareMemory = function() {
       console.log('ConstructionSites: ', Object.keys(Memory.constructionSites).length);
       console.log('-------------------------');
 
-      var storageNoString = '';
-      var storageLowString = '';
-      var storageMiddleString = '';
-      var storageHighString = '';
-      var storagePower = '';
+      var storage = {
+        no: '', low: '', middle: '', high: '', power: ''
+      };
       var upgradeLess = '';
       for (var id in Memory.myRooms) {
-        let name = Memory.myRooms[id];
-        let room = Game.rooms[name];
-        if (!room || !room.storage) {
-          storageNoString += name + ' ';
+        let roomName = Memory.myRooms[id];
+        let room = Game.rooms[roomName];
+        let roomStorage = room && room.storage
+        if (!roomStorage) {
+          storage.no += roomName + ' ';
           continue;
         }
-        if (room.storage.store.energy < 200000) {
-          storageLowString += name + ':' + room.storage.store.energy + ' ';
-        } else if (room.storage.store.energy > 800000) {
-          storageHighString += name + ':' + room.storage.store.energy + ' ';
+        let storageEnergy = room.storage.store.energy;
+        let storagePower = room.storage.store.power;
+        if (storageEnergy < 200000) {
+          storage.low += roomName + ':' + storageEnergy + ' ';
+        } else if (storageEnergy >= 800000) {
+          storage.high += roomName + ':' + storageEnergy + ' ';
         } else {
-          storageMiddleString += name + ':' + room.storage.store.energy + ' ';
+          storage.middle += roomName + ':' + storageEnergy + ' ';
         }
-        if (room.storage.store.power && room.storage.store.power > 0) {
-          storagePower += name + ':' + room.storage.store.power + ' ';
+        if (storagePower && storagePower > 0) {
+          storage.power += roomName + ':' + storagePower + ' ';
         }
         // TODO 15 it should be
         if (Math.ceil(room.memory.upgraderUpgrade / interval) < 15) {
-          upgradeLess += name + ':' + room.memory.upgraderUpgrade / interval + ' ';
+          upgradeLess += roomName + ':' + room.memory.upgraderUpgrade / interval + ' ';
         }
         room.memory.upgraderUpgrade = 0;
       }
-      console.log('No storage:', storageNoString);
-      console.log('Low storage:', storageLowString);
-      console.log('Middle storage:', storageMiddleString);
-      console.log('High storage:', storageHighString);
+      console.log('No storage:', storage.no);
+      console.log('Low storage:', storage.low);
+      console.log('Middle storage:', storage.middle);
+      console.log('High storage:', storage.high);
       console.log('-------------------------');
-      console.log('Power storage:', storagePower);
+      console.log('Power storage:', storage.power);
       console.log('-------------------------');
       console.log('Upgrade less:', upgradeLess);
       console.log('=========================');
