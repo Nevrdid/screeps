@@ -22,6 +22,45 @@ Room.prototype.nearestRoomName = function(roomsNames, limit) {
   return _.min(roomsNames, sortByLinearDistance);
 };
 
+Room.prototype.getsourcesPlaces = function(sId = -1, pId = -1) {
+  let sources = this.memory.sources || this.getSources;
+  let places;
+  if (!this.sourcesPlaces) {
+    let s = 0;
+    _.forEach(sources, function(source) {
+      places = Game.rooms[this.name].lookForAtArea(LOOK_TERRAIN,
+        source.y - 1,
+        source.x - 1,
+        source.y + 1,
+        source.x + 1, true);
+      places = _.filter(places, (object) => (object.terrain === 'swamp' || object.terrain === 'plain')).length;
+      for (let p in places) {
+        this.memory.sources[s].place[p].x = places[p].pos.x;
+        this.memory.sources[s].place[p].x = places[p].pos.x;
+      }
+      s++;
+    });
+  }
+  if (sId >= 0) {
+    if (pId >= 0) {
+      return this.memory.sourcesPlaces[sId].place[pId];
+    }
+    return this.memory.sourcesPlaces[sId];
+  }
+  return this.memory.sourcesPlaces;
+};
+Room.prototype.getSources = function() {
+  if (!this.memory.sources) {
+    let sources = this.find(FIND_SOURCES);
+    for (let s in sources) {
+      this.memory.sources[s].x = sources[s].pos.x;
+      this.memory.sources[s].y = sources[s].pos.y;
+      this.getSourcesPlaces();
+    }
+  }
+  return this.memory.sources;
+};
+
 Room.prototype.closestSpawn = function(target) {
   let pathLength = {};
   let roomsMy = this.sortMyRoomsByLinearDistance(target);

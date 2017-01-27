@@ -310,11 +310,13 @@ Room.prototype.handleReservedRoom = function() {
 Room.prototype.handleUnreservedRoom = function() {
   this.memory.state = 'Unreserved';
   this.memory.lastSeen = Game.time;
-  if (this.memory.lastChecked !== undefined &&
-    Game.time - this.memory.lastChecked < 500) {
+  let travelingTime = 500;
+  if (this.memory.reservation && this.memory.reservation.base) {
+    travelingTime = 100 * Game.map.getRoomLinearDistance(this.name, this.memory.reservation.base);
+  }
+  if (this.memory.lastChecked !== undefined && Game.time - this.memory.lastChecked < travelingTime) {
     return true;
   }
-
   // TODO: Don't check every tick.
   if (this.memory.reservation === undefined) {
     let isReservedBy = (roomName) => {

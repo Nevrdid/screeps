@@ -46,6 +46,7 @@ Room.prototype.spawnCreateCreep = function(creep) {
       buildRoad: unit.buildRoad,
       routing: creep.routing
     };
+
     let returnCode = spawn.createCreep(partConfig, name, memory);
 
     if (returnCode != name) {
