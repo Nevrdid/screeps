@@ -10,9 +10,14 @@ Room.prototype.sortMyRoomsByLinearDistance = function(target) {
 
 Room.prototype.nearestRoomName = function(roomsNames, limit) {
   let roomName = this.name;
+  let filterByLinearDistance = function(object) {
+    let dist = Game.map.getRoomLinearDistance(roomName, object);
+    return dist <= limit;
+  };
+  roomsNames = _.filter(roomsNames, filterByLinearDistance);
   let sortByLinearDistance = function(object) {
     let dist = Game.map.getRoomLinearDistance(roomName, object);
-    return dist <= limit ? dist : 1000;
+    return dist;
   };
   return _.min(roomsNames, sortByLinearDistance);
 };
@@ -121,125 +126,6 @@ Room.prototype.inQueue = function(spawn) {
     return true;
   }
   return false;
-};
-
-Room.prototype.checkAndSpawnSourcer = function() {
-  var sources = this.find(FIND_SOURCES);
-
-  let source;
-
-  let isSourcer = function(object) {
-    if (object.memory.role != 'sourcer') {
-      return false;
-    }
-    if (object.memory.routing && object.memory.routing.targetId != source.id) {
-      return false;
-    }
-    if (object.memory.routing && object.memory.routing.targetRoom != source.pos.roomName) {
-      return false;
-    }
-    return true;
-  };
-
-  for (source of sources) {
-    let sourcers = this.find(FIND_MY_CREEPS, {
-      filter: isSourcer
-    });
-    if (sourcers.length === 0) {
-      //      this.log(source.id);
-      this.checkRoleToSpawn('sourcer', 1, source.id, this.name);
-    }
-  }
-};
-
-Room.prototype.checkRoleToSpawn = function(role, amount, targetId, targetRoom, level, base) {
-  if (targetRoom === undefined) {
-    targetRoom = this.name;
-  }
-  if (amount === undefined) {
-    amount = 1;
-  }
-
-  let creepMemory = {
-    role: role,
-    level: level,
-    base: base || undefined,
-    routing: {
-      targetRoom: targetRoom,
-      targetId: targetId
-    }
-  };
-
-  if (this.inQueue(creepMemory)) {
-    return false;
-  }
-
-  if (targetRoom === this.name) {
-    let creeps = this.find(FIND_MY_CREEPS, {
-      filter: (creep) => {
-        if (creep.memory.routing === undefined) {
-          return false;
-        }
-        if (targetId !== undefined &&
-          targetId !== creep.memory.routing.targetId) {
-          return false;
-        }
-        if (targetRoom !== undefined &&
-          targetRoom !== creep.memory.routing.targetRoom) {
-          return false;
-        }
-        return creep.memory.role == role;
-      }
-    });
-    if (creeps.length >= amount) {
-      return false;
-    }
-  }
-
-  let spawns = this.find(FIND_MY_STRUCTURES, {
-    filter: function(object) {
-      return object.structureType == STRUCTURE_SPAWN;
-    }
-  });
-
-  for (var spawn of spawns) {
-    if (!spawn.spawning || spawn.spawning === null) {
-      continue;
-    }
-
-    let creep = Game.creeps[spawn.spawning.name];
-    if (creep.memory.role == role) {
-      return false;
-    }
-    if (targetId && creep.memory.routing) {
-      if (targetId != creep.memory.routing.targetId) {
-        return false;
-      }
-    }
-    if (creep.memory.routing) {
-      if (targetRoom != creep.memory.routing.targetRoom) {
-        return false;
-      }
-    }
-  }
-  this.memory.queue.push(creepMemory);
-};
-
-Room.prototype.getPartConfig = function(energy, parts) {
-  var sum = 0;
-  var i = 0;
-  var partConfig = [];
-  while (sum < energy && partConfig.length < 50) {
-    var part = parts[i % parts.length];
-    if (sum + BODYPART_COST[part] <= energy) {
-      partConfig.push(part);
-      sum += BODYPART_COST[part];
-      i += 1;
-    } else {
-      break;
-    }
-  }
-  return partConfig;
 };
 
 Room.pathToString = function(path) {
