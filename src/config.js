@@ -46,7 +46,8 @@ global.config = {
   },
 
   debug: {
-    getPartsConfLogs: false
+    getPartsConfLogs: false,
+    divers: false,
   },
 
   autoattack: {
@@ -183,4 +184,3 @@ global.config = {
 try {
   require('config_local');
 } catch (e) {}
-
