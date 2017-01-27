@@ -13,8 +13,8 @@ roles.defender.settings = {
   param: ['controller.level'],
   layout: 'MRH',
   amount: {
-    1: [2,1,1],
-    8: [4,1,1],
+    1: [2, 1, 1],
+    8: [4, 1, 1],
   }
 };
 

@@ -21,8 +21,8 @@ roles.harvester.settings = {
   param: ['controller.level'],
   layout: 'MWC',
   amount: {
-    1: [2,1,1],
-    3: [1,1,1],
+    1: [2, 1, 1],
+    3: [1, 1, 1],
   },
   maxLayoutAmount: 6,
 };

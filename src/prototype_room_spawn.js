@@ -160,7 +160,8 @@ Room.prototype.getCostForParts = function(parts, energyAvailable) {
  */
 Room.prototype.getSettings = function(creep) {
   let role = creep.role;
-  let settings = roles[role].settings;
+  let levelModif = roles[role].checkLevel && roles[role].checkLevel(this, creep);
+  let settings = _.merge(roles[role].settings, levelModif);
   if (!settings) {
     this.log('try to spawn ', role, ' but settings are not done. Abort spawn');
     return;
@@ -213,8 +214,13 @@ Room.prototype.getPartConfig = function(creep) {
   let datas = this.getSettings(creep);
   if (!datas) { return; }
 
-  let {prefixParts, layout, amount,
-    maxLayoutAmount, sufixParts} = datas;
+  let {
+    prefixParts,
+    layout,
+    amount,
+    maxLayoutAmount,
+    sufixParts
+  } = datas;
 
   let maxBodyLength = MAX_CREEP_SIZE;
   if (prefixParts) { maxBodyLength -= prefixParts.length; }
@@ -234,7 +240,7 @@ Room.prototype.getPartConfig = function(creep) {
     parts = prefixParts || [];
     let maxRepeat = Math.floor(Math.min(energyAvailable / layoutCost, maxBodyLength / layout.length));
     if (!maxRepeat) {
-      return ;
+      return;
     }
     if (maxLayoutAmount) {
       maxRepeat = Math.min(maxLayoutAmount, maxRepeat);
@@ -242,7 +248,7 @@ Room.prototype.getPartConfig = function(creep) {
     parts = parts.concat(_.flatten(Array(maxRepeat).fill(layout)));
     energyAvailable -= layoutCost * maxRepeat;
   } else {
-    return ;
+    return;
   }
 
   sufixParts = utils.stringToParts(sufixParts);

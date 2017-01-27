@@ -12,7 +12,7 @@ roles.planer.stayInRoom = true;
 
 roles.planer.settings = {
   layout: 'MCW',
-  amount: [2,1,1]
+  amount: [2, 1, 1]
 };
 
 roles.planer.action = function(creep) {

@@ -18,7 +18,7 @@ roles.carry.boostActions = ['capacity'];
 roles.carry.settings = {
   prefixParts: 'WMC',
   layout: 'MC',
-  amount: [1,2]
+  amount: [1, 2]
 };
 
 roles.carry.preMove = function(creep, directions) {

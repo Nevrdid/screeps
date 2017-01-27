@@ -23,7 +23,7 @@ roles.nextroomer.died = function(name, creepMemory) {
 
 roles.nextroomer.settings = {
   layout: 'MWC',
-  amount: [6,3,3],
+  amount: [6, 3, 3],
 };
 
 roles.nextroomer.checkForRampart = function(coords) {

@@ -11,7 +11,7 @@ roles.atkeeper = {};
 
 roles.atkeeper.settings = {
   layout: 'MRH',
-  amount: [2,1,1]
+  amount: [2, 1, 1]
 };
 
 roles.atkeeper.action = function(creep) {

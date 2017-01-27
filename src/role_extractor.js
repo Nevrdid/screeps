@@ -12,7 +12,7 @@ roles.extractor.boostActions = ['harvest', 'capacity'];
 
 roles.extractor.settings = {
   layout: 'MCW',
-  amount: [2,1,1],
+  amount: [2, 1, 1],
   maxLayoutAmount: 8,
 };
 

@@ -11,7 +11,7 @@
 roles.mineral = {};
 roles.mineral.settings = {
   layout: 'MC',
-  amount: [2,2],
+  amount: [2, 2],
   maxLayoutAmount: 10,
 
 };

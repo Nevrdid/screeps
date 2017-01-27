@@ -10,7 +10,7 @@ roles.towerfiller = {};
 
 roles.towerfiller.settings = {
   layout: 'MC',
-  amount: [1,4]
+  amount: [1, 4]
 };
 
 roles.towerfiller.execute = function(creep) {

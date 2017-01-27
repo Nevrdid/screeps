@@ -13,7 +13,7 @@ roles.structurer.boostActions = ['dismantle'];
 
 roles.structurer.settings = {
   layout: 'MW',
-  amount: [5,5]
+  amount: [5, 5]
 };
 
 roles.structurer.preMove = function(creep, directions) {

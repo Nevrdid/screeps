@@ -12,21 +12,17 @@ roles.reserver.killPrevious = true;
 // TODO should be true, but flee must be fixed  (2016-10-13)
 roles.reserver.flee = false;
 
+roles.reserver.settings = {
+  layout: 'MK',
+  maxLayoutAmout: 1,
+};
 //TODO convert this as setting
-roles.reserver.getPartConfig = function(room, creep) {
+roles.reserver.checkLevel = function(room, creep) {
   let level = creep.level ? creep.level : 1;
-  let datas = {
-    layout: 'MK',
-    maxEnergyUsed: 650 * level,
-    minEnergyUsed: 650 * level
-  };
-
   if (level === 5) {
     room.log('Build super reserver');
-    datas.minEnergyUsed = 5 * 650;
-    datas.maxEnergyUsed = room.energyAvailable;
+    return {amount: [5,5]};
   }
-  return room.getPartConfig(datas);
 };
 
 roles.reserver.action = function(creep) {
