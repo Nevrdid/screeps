@@ -24,9 +24,6 @@ roles.upgrader.settings = {
       }
     }
   },
-  amount: {
-    4: [10]
-  },
   maxLayoutAmount: {
     7: {
       50000: 2,

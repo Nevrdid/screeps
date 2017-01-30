@@ -53,6 +53,7 @@ roles.harvester.preMove = function(creep, directions) {
   if (linkStorage && linkStorage.energy > config.creep.linkStorageTreshold * linkStorage.energyCapacity) {
     creep.withdraw(linkStorage, RESOURCE_ENERGY);
   } else if (!creep.room.storage || (creep.room.storage.store.energy + creep.carry.energy) < config.creep.energyFromStorageThreshold) {
+    creep.room.log('harvester gonna harvest. Energy in storage: ' + creep.room.storage ? creep.room.storage.store.energy : 0);
     creep.harvesterBeforeStorage();
     creep.memory.routing.reached = true;
     return true;
