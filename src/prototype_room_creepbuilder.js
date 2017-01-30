@@ -159,7 +159,7 @@ Room.prototype.getSettings = function(creep) {
     return;
   }
   let param = settings.param;
-  return _.mapValues(settings, (setting, settingName) => {
+  settings = _.mapValues(settings, (setting, settingName) => {
     if (!param) {
       return setting;
     }
@@ -179,6 +179,8 @@ Room.prototype.getSettings = function(creep) {
     }
     return setting;
   });
+
+  return settings;
 };
 
 Room.prototype.applyAmount = function(array, amount) {
@@ -194,6 +196,17 @@ Room.prototype.applyAmount = function(array, amount) {
   return parts;
 };
 
+Room.prototype.sortParts = function(parts, layout) {
+  return _.sortBy(parts, function(p) {
+    let order = _.indexOf(layout, p) + 1;
+    if (order) {
+      return order;
+    } else {
+      return layout.length;
+    }
+  });
+};
+
 /**
  * Room.prototype.getPartsConfig use for generate adapted body
  *
@@ -201,18 +214,14 @@ Room.prototype.applyAmount = function(array, amount) {
  */
 
 Room.prototype.getPartConfig = function(creep) {
-  let parts = [];
   let energyAvailable = this.energyAvailable;
-  let datas = this.getSettings(creep);
-  if (!datas) { return; }
-
   let {
     prefixParts,
     layout,
     amount,
     maxLayoutAmount,
     sufixParts
-  } = datas;
+  } = this.getSettings(creep);
 
   let maxBodyLength = MAX_CREEP_SIZE;
   if (prefixParts) { maxBodyLength -= prefixParts.length; }
@@ -221,27 +230,16 @@ Room.prototype.getPartConfig = function(creep) {
   prefixParts = global.utils.stringToParts(prefixParts);
   let prefixCost = this.getCostForParts(prefixParts, energyAvailable);
   energyAvailable -= prefixCost;
-  layout = global.utils.stringToParts(layout);
-  if (amount) {
-    layout = this.applyAmount(layout, amount); // [M, W, R] , [1, 2, 3] -----> [M, W, W, R, R, R]
-  }
-  let layoutCost = this.getCostForParts(layout, energyAvailable);
-  //console.log(JSON.stringify(prefixCost, '-', layoutCost));
-  if (layoutCost) {
 
-    parts = prefixParts || [];
-    let maxRepeat = Math.floor(Math.min(energyAvailable / layoutCost, maxBodyLength / layout.length));
-    if (!maxRepeat) {
-      return;
-    }
-    if (maxLayoutAmount) {
-      maxRepeat = Math.min(maxLayoutAmount, maxRepeat);
-    }
-    parts = parts.concat(_.flatten(Array(maxRepeat).fill(layout)));
-    energyAvailable -= layoutCost * maxRepeat;
-  } else {
-    return;
-  }
+  layout = global.utils.stringToParts(layout);
+  layout = amount && this.applyAmount(layout, amount); // [M, W, R] , [1, 2, 3] -----> [M, W, W, R, R, R]
+  let layoutCost = this.getCostForParts(layout, energyAvailable);
+  if (!layoutCost) {return false;}
+  let parts = prefixParts || [];
+  let maxRepeat = Math.floor(Math.min(energyAvailable / layoutCost, maxBodyLength / layout.length));
+  maxRepeat = maxLayoutAmount && Math.min(maxLayoutAmount, maxRepeat);
+  parts = parts.concat(_.flatten(Array(maxRepeat).fill(layout)));
+  energyAvailable -= layoutCost * maxRepeat;
 
   sufixParts = global.utils.stringToParts(sufixParts);
   let sufixCost = this.getCostForParts(sufixParts, energyAvailable);
@@ -249,17 +247,7 @@ Room.prototype.getPartConfig = function(creep) {
     parts = parts.concat(sufixParts);
     energyAvailable -= sufixCost;
   }
-  let sort = function(parts) {
-    return _.sortBy(parts, function(p) {
-      let order = _.indexOf(layout, p) + 1;
-      if (order) {
-        return order;
-      } else {
-        return layout.length;
-      }
-    });
-  };
-  return config.creep.sortParts ? sort(parts) : parts;
+  return config.creep.sortParts ? this.sortParts(parts, layout) : parts;
 };
 
 /**
