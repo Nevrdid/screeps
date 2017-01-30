@@ -67,28 +67,6 @@ Room.prototype.splitRoomName = function() {
   return result;
 };
 
-Room.prototype.inQueue = function(spawn) {
-  this.memory.queue = this.memory.queue || [];
-
-  for (var item of this.memory.queue) {
-    if (item.role != spawn.role) {
-      continue;
-    }
-    if (spawn.routing && spawn.routing.targetId && item.routing) {
-      if (item.routing.targetId != spawn.routing.targetId) {
-        continue;
-      }
-    }
-    if (spawn.routing && spawn.routing.targetRoom && item.routing) {
-      if (item.routing.targetRoom != spawn.routing.targetRoom) {
-        continue;
-      }
-    }
-    return true;
-  }
-  return false;
-};
-
 Room.pathToString = function(path) {
   if (!config.performance.serializePath) {
     return path;

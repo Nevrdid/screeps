@@ -1,53 +1,67 @@
 'use strict';
+Room.prototype.priorityQueue = function(object) {
+  let priority = config.priorityQueue;
+  let target = object.routing && object.routing.targetRoom;
+  if (target === this.name) {
+    return priority.sameRoom[object.role] || 4;
+  }
+  if (target) {
+    return priority.otherRoom[object.role] ||
+      10 + Game.map.getRoomLinearDistance(this.name, target);
+  }
+  return 15;
+};
+
 Room.prototype.spawnCheckForCreate = function() {
-  let storages;
-  let energyNeeded;
-  let unit;
+  let spawnsNotSpawning = _.filter(this.find(FIND_MY_SPAWNS), function(object) {
+    return !object.spawning;
+  });
 
   if (this.memory.queue.length === 0) {
     return false;
   }
-  let room = this;
-
-  let priorityQueue = function(object) {
-    let priority = config.priorityQueue;
-    let target = object.routing && object.routing.targetRoom;
-    if (target === room.name) {
-      return priority.sameRoom[object.role] || 4;
-    }
-    if (target) {
-      return priority.otherRoom[object.role] ||
-        10 + Game.map.getRoomLinearDistance(room.name, target);
-    }
-    return 15;
-  };
-
-  this.memory.queue = _.sortBy(this.memory.queue, priorityQueue);
+  this.memory.queue = _.sortBy(this.memory.queue, c => this.priorityQueue(c));
 
   let creep = this.memory.queue[0];
-  energyNeeded = 50;
-
   if (this.spawnCreateCreep(creep)) {
     this.memory.queue.shift();
-  } else {
-    if (creep.ttl === 0) {
-      this.log('TTL reached, skipping: ' + JSON.stringify(creep));
-      this.memory.queue.shift();
-      return;
-    }
-
-    // TODO maybe skip only if there is a spawn which is not spawning
-    creep.ttl = creep.ttl || config.creep.queueTtl;
-    let spawnsNotSpawning = _.filter(this.find(FIND_MY_SPAWNS), function(object) {
-      return !object.spawning;
-    });
-    if (spawnsNotSpawning.length === 0) {
-      creep.ttl--;
-    }
+    return true;
   }
-  // Spawing only one per tick
+  if (creep.ttl === 0) {
+    this.log('TTL reached, skipping: ' + JSON.stringify(creep));
+    this.memory.queue.shift();
+    return false;
+  }
+  creep.ttl = creep.ttl || config.creep.queueTtl;
+
+  if (spawnsNotSpawning.length === 0) {
+    creep.ttl--;
+  }
   return false;
 };
+
+Room.prototype.inQueue = function(spawn) {
+  this.memory.queue = this.memory.queue || [];
+
+  for (var item of this.memory.queue) {
+    if (item.role != spawn.role) {
+      continue;
+    }
+    if (spawn.routing && spawn.routing.targetId && item.routing) {
+      if (item.routing.targetId != spawn.routing.targetId) {
+        continue;
+      }
+    }
+    if (spawn.routing && spawn.routing.targetRoom && item.routing) {
+      if (item.routing.targetRoom != spawn.routing.targetRoom) {
+        continue;
+      }
+    }
+    return true;
+  }
+  return false;
+};
+
 /**
  * First function call for ask a creep spawn. Add it in queue after check if spawn is allow.
  *
@@ -60,13 +74,8 @@ Room.prototype.spawnCheckForCreate = function() {
  * @return {boolean}           if the spawn is not allow, it will return false.
  */
 Room.prototype.checkRoleToSpawn = function(role, amount, targetId, targetRoom, level, base) {
-  if (targetRoom === undefined) {
-    targetRoom = this.name;
-  }
-  if (amount === undefined) {
-    amount = 1;
-  }
-
+  targetRoom = targetRoom || this.name;
+  amount = amount || 1;
   let creepMemory = {
     role: role,
     level: level,
@@ -76,60 +85,25 @@ Room.prototype.checkRoleToSpawn = function(role, amount, targetId, targetRoom, l
       targetId: targetId
     }
   };
-
   if (this.inQueue(creepMemory)) {
     return false;
   }
-
-  if (targetRoom === this.name) {
-    let creeps = this.find(FIND_MY_CREEPS, {
-      filter: (creep) => {
-        if (creep.memory.routing === undefined) {
-          return false;
-        }
-        if (targetId !== undefined &&
-          targetId !== creep.memory.routing.targetId) {
-          return false;
-        }
-        if (targetRoom !== undefined &&
-          targetRoom !== creep.memory.routing.targetRoom) {
-          return false;
-        }
-        return creep.memory.role === role;
-      }
-    });
-    if (creeps.length >= amount) {
-      return false;
-    }
+  let creeps = this.find(FIND_MY_CREEPS);
+  let spawns = this.find(FIND_MY_SPAWNS);
+  for (let spawn of spawns) {
+    if (!spawn.spawning) {continue;}
+    creeps.push(Game.creeps[spawn.spawning.name]);
   }
-
-  let spawns = this.find(FIND_MY_STRUCTURES, {
-    filter: function(object) {
-      return object.structureType === STRUCTURE_SPAWN;
-    }
+  creeps = _.filter(creeps, creep => {
+    if (!creep.memory.routing) {return false;}
+    let creepTarget = {targetId: creep.memory.routing.targetId,
+      targetRoom: creep.memory.routing.targetRoom};
+    return _.equ(creepMemory.routing, creepTarget) && role === creep.memory.role;
   });
-
-  for (var spawn of spawns) {
-    if (!spawn.spawning || spawn.spawning === null) {
-      continue;
-    }
-
-    let creep = Game.creeps[spawn.spawning.name];
-    if (creep.memory.role === role) {
-      return false;
-    }
-    if (targetId && creep.memory.routing) {
-      if (targetId !== creep.memory.routing.targetId) {
-        return false;
-      }
-    }
-    if (creep.memory.routing) {
-      if (targetRoom !== creep.memory.routing.targetRoom) {
-        return false;
-      }
-    }
+  if (creeps.length < amount) {
+    this.memory.queue.push(creepMemory);
   }
-  this.memory.queue.push(creepMemory);
+
 };
 
 /**
