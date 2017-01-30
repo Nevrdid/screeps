@@ -428,17 +428,16 @@ Creep.prototype.transferToStructures = function() {
     true);
   for (let item of look) {
     if (filterTransferrables(item.structure)) {
-      if (transferred) {
-        return {
-          moreStructures: true,
-          // TODO handle different type of resources on the structure side
-          transferred: transferred
-        };
-      }
       for (let resource in this.carry) {
         let returnCode = this.transfer(item.structure, resource);
         if (returnCode == OK) {
           transferred = Math.min(this.carry[resource], item.structure.energyCapacity - item.structure.energy);
+        }
+        if (transferred) {
+          return {
+            moreStructures: true,
+            transferred: transferred
+          };
         }
       }
     }
