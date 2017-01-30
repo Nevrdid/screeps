@@ -1,5 +1,17 @@
 'use strict';
 
+brain.stats.incrementValue = function(path) {
+  let userName = Memory.username || _.find(Game.spawns, 'owner').owner;
+  let previousValue = Memory.stats[userName][path.join('.')] || 0;
+  brain.stats.add(path, previousValue + 1);
+};
+
+brain.stats.decrementValue = function(path) {
+  let userName = Memory.username || _.find(Game.spawns, 'owner').owner;
+  let previousValue = Memory.stats[userName][path.join('.')] || 0;
+  brain.stats.add(path, previousValue-- >= 0 ? previousValue-- : 0);
+};
+
 /**
  * stats.add use for push anything into Memory.stats at a given place.
  *

@@ -41,17 +41,14 @@ brain.prepareMemory = function() {
     console.log('Known constructionSites: ' + Object.keys(constructionSites).length);
   }
 
-  var userName = Memory.username || _.find(Game.spawns, 'owner').owner.username;
+  let userName = Memory.username || _.find(Game.spawns, 'owner').owner.username;
   Memory.username = userName;
   // Cleanup memory
   for (let name in Memory.creeps) {
     if (!Game.creeps[name]) {
       let role = Memory.creeps[name].role;
       if (config.stats.enabled && userName && Memory.stats && Memory.stats[userName].roles) {
-        let roleStat = Memory.stats[userName].roles[role];
-        let previousAmount = roleStat ? roleStat : 0;
-        let amount = previousAmount > 0 ? previousAmount - 1 : 0;
-        brain.stats.add(['roles', role], amount);
+        brain.stats.decrementValue(['roles',role]);
       }
 
       if ((name.startsWith('reserver') && Memory.creeps[name].born < (Game.time - CREEP_CLAIM_LIFE_TIME)) || Memory.creeps[name].born < (Game.time - CREEP_LIFE_TIME)) {

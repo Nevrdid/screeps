@@ -16,7 +16,7 @@ roles.reserver.settings = {
   layout: 'MK',
   maxLayoutAmout: 1,
 };
-//TODO convert this as setting
+
 roles.reserver.checkLevel = function(room, creep) {
   let level = creep.level ? creep.level : 1;
   if (level === 5) {
