@@ -35,7 +35,9 @@ roles.carry.preMove = function(creep, directions) {
           return true;
         }
       });
-      creep.moveTo(structure);
+      creep.moveTo(structure, {
+        ignoreCreeps: true
+      });
       creep.transfer(structure, RESOURCE_ENERGY);
     } else {
       let targetId = creep.memory.routing.targetId;
