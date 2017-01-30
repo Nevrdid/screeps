@@ -47,7 +47,7 @@ Room.prototype.inQueue = function(creepMemory) {
     if (!item.routing) {continue;}
     let creepTarget = {targetId: item.routing.targetId,
       targetRoom: item.routing.targetRoom};
-    let found = _.equ(creepMemory.routing, creepTarget) && creepMemory.role === item.role;
+    let found = _.eq(creepMemory.routing, creepTarget) && creepMemory.role === item.role;
     if (found) {return true;}
   }
   return false;
@@ -89,7 +89,7 @@ Room.prototype.checkRoleToSpawn = function(role, amount, targetId, targetRoom, l
     if (!creep.memory.routing) {return false;}
     let creepTarget = {targetId: creep.memory.routing.targetId,
       targetRoom: creep.memory.routing.targetRoom};
-    return _.equ(creepMemory.routing, creepTarget) && role === creep.memory.role;
+    return _.eq(creepMemory.routing, creepTarget) && role === creep.memory.role;
   });
   if (creeps.length < amount) {
     this.memory.queue.push(creepMemory);
