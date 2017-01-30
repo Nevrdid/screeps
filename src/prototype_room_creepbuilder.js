@@ -40,24 +40,15 @@ Room.prototype.spawnCheckForCreate = function() {
   return false;
 };
 
-Room.prototype.inQueue = function(spawn) {
+Room.prototype.inQueue = function(creepMemory) {
   this.memory.queue = this.memory.queue || [];
 
   for (var item of this.memory.queue) {
-    if (item.role != spawn.role) {
-      continue;
-    }
-    if (spawn.routing && spawn.routing.targetId && item.routing) {
-      if (item.routing.targetId != spawn.routing.targetId) {
-        continue;
-      }
-    }
-    if (spawn.routing && spawn.routing.targetRoom && item.routing) {
-      if (item.routing.targetRoom != spawn.routing.targetRoom) {
-        continue;
-      }
-    }
-    return true;
+    if (!item.routing) {continue;}
+    let creepTarget = {targetId: item.routing.targetId,
+      targetRoom: item.routing.targetRoom};
+    let found = _.equ(creepMemory.routing, creepTarget) && creepMemory.role === item.role;
+    if (found) {return true;}
   }
   return false;
 };
@@ -175,7 +166,7 @@ Room.prototype.getSettings = function(creep) {
  * @return {array}        the new array.
  */
 Room.prototype.applyAmount = function(array, amount) {
-
+  if (!amount) {return array;}
   let cost = 0;
   let parts = [];
   _.forEach(amount, function(element, index) {
@@ -228,8 +219,7 @@ Room.prototype.getPartConfig = function(creep) {
   let prefixCost = this.getCostForParts(prefixParts, energyAvailable);
   energyAvailable -= prefixCost;
 
-  layout = global.utils.stringToParts(layout);
-  layout = amount && this.applyAmount(layout, amount);
+  layout = this.applyAmount(global.utils.stringToParts(layout), amount);
   let layoutCost = this.getCostForParts(layout, energyAvailable);
   if (!layoutCost) {return false;}
   let parts = prefixParts || [];
@@ -244,6 +234,7 @@ Room.prototype.getPartConfig = function(creep) {
     parts = parts.concat(sufixParts);
     energyAvailable -= sufixCost;
   }
+
   return config.creep.sortParts ? this.sortParts(parts, layout) : parts;
 };
 
