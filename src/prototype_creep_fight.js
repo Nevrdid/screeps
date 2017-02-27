@@ -19,24 +19,29 @@ Creep.prototype.findClosestEnemy = function() {
   });
 };
 
+Creep.prototype.checkDir = function(dirToCheck) {
+  let pos = this.pos.getAdjacentPosition(dirToCheck);
+  if (pos.lookFor(LOOK_TERRAIN)[0] !== 'wall' &&
+    pos.lookFor('creep').length === 0) {
+    return true;
+  }
+};
+
 Creep.prototype.fleeFromHostile = function(hostile) {
-  let direction = this.pos.getDirectionTo(hostile);
-  direction = (direction + 3) % 8 + 1;
-  if (!direction || direction === null || this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49) {
+  this.rangedAttack(hostile);
+  if (this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49) {
     this.moveTo(25, 25);
     return true;
   }
-  for (let offset = 0; offset < 8; offset++) {
-    let pos = this.pos.getAdjacentPosition(direction + offset);
-    if (pos.lookFor(LOOK_TERRAIN)[0] !== 'wall') {
-      if (pos.lookFor('creep').length === 0) {
-        direction = direction + offset;
-        break;
-      }
+  let dirToHostile = this.pos.getDirectionTo(hostile);
+  let direction;
+  _.each(config.flee.order, d => {
+    direction = 1 + (dirToHostile + d - 1) % 8;
+    if (this.checkDir(direction)) {
+      this.move(direction);
+      return true;
     }
-  }
-  this.rangedAttack(hostile);
-  this.move(direction);
+  });
 };
 
 Creep.prototype.attackHostile = function(hostile) {
@@ -195,7 +200,7 @@ Creep.prototype.waitRampart = function() {
   let creep = this;
   let structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
     filter: function(object) {
-      if (object.structureType != STRUCTURE_RAMPART) {
+      if (object.structureType !== STRUCTURE_RAMPART) {
         return false;
       }
       return creep.pos.getRangeTo(object) > 0;
@@ -229,18 +234,12 @@ Creep.prototype.fightRampart = function(target) {
     return false;
   }
 
-  let position = target.pos.findClosestByRange(FIND_MY_STRUCTURES, {
-    filter: function(object) {
-      return object.structureType === STRUCTURE_RAMPART;
-    }
-  });
+  let position = target.pos.findClosestStructure(FIND_MY_STRUCTURES, STRUCTURE_RAMPART);
 
   if (position === null) {
     return false;
   }
-
-  let range = target.pos.getRangeTo(position);
-  if (range > 3) {
+  if (target.pos.getRangeTo(position) > 3) {
     return false;
   }
 
@@ -271,10 +270,7 @@ Creep.prototype.fightRampart = function(target) {
   );
 
   let returnCode = this.move(this.pos.getDirectionTo(search.path[0]));
-  if (returnCode === OK) {
-    return true;
-  }
-  if (returnCode === ERR_TIRED) {
+  if (returnCode === OK || returnCode === ERR_TIRED) {
     return true;
   }
 
@@ -332,8 +328,8 @@ Creep.prototype.fightRanged = function(target) {
     }
     let room = Game.rooms[roomName];
     let structures = room.findPropertyFilter(FIND_STRUCTURES, 'structureType', [STRUCTURE_ROAD], true);
-    for (let i in structures) {
-      let structure = structures[i];
+    let structure;
+    for (structure of structures) {
       costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
     }
     return costMatrix;
