@@ -19,12 +19,18 @@ Creep.prototype.findClosestEnemy = function() {
   });
 };
 
-Creep.prototype.checkDir = function(dirToCheck) {
-  let pos = this.pos.getAdjacentPosition(dirToCheck);
-  if (pos.lookFor(LOOK_TERRAIN)[0] !== 'wall' &&
-    pos.lookFor('creep').length === 0) {
-    return true;
-  }
+Creep.prototype.fleeDir = function(dirToHostile, order = [3, 4, 5, 2, 6, 1, 7, 0]) {
+  let direction;
+  let pos;
+  _.each(order, d => {
+    direction = 1 + (dirToHostile + d - 1) % 8;
+    pos = this.pos.getAdjacentPosition(direction);
+    if (pos.lookFor(LOOK_TERRAIN)[0] !== 'wall' &&
+      pos.lookFor('creep').length === 0) {
+      return direction;
+    }
+  });
+  return 0;
 };
 
 Creep.prototype.fleeFromHostile = function(hostile) {
@@ -33,15 +39,11 @@ Creep.prototype.fleeFromHostile = function(hostile) {
     this.moveTo(25, 25);
     return true;
   }
-  let dirToHostile = this.pos.getDirectionTo(hostile);
-  let direction;
-  _.each(config.flee.order, d => {
-    direction = 1 + (dirToHostile + d - 1) % 8;
-    if (this.checkDir(direction)) {
-      this.move(direction);
-      return true;
-    }
-  });
+  let direction = this.fleeDir(this.pos.getDirectionTo(hostile));
+  if (direction) {
+    this.move(direction);
+    return true;
+  }
 };
 
 Creep.prototype.attackHostile = function(hostile) {

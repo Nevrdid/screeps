@@ -96,10 +96,6 @@ global.config = {
     remeberInRoom: 1500,
   },
 
-  flee: {
-    order: [3, 4, 5, 2, 6, 1, 7, 0],
-  },
-
   path: {
     refresh: 20000,
     allowRoutingThroughFriendRooms: false,
