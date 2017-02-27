@@ -17,16 +17,23 @@ RoomPosition.prototype.findClosestStructure = function(structures, structureType
 };
 
 RoomPosition.prototype.getAdjacentPosition = function(direction) {
+  /**
+  direction--;
+  let dPosX = direction % 4 ? (direction / 4 > 1 ? -1 : 1) : 0;
+  direction -= 2;
+  let dPosY = direction % 4 ? (direction / 4 > 0 && direction / 4 < 1 ? -1 : 1) : 0;
+  return new RoomPosition(this.x + dPosX, this.y + dPosY, this.roomName);
+  **/
   var adjacentPos = [
     [0, 0],
-    [0, -1],
-    [1, -1],
-    [1, 0],
-    [1, 1],
     [0, 1],
-    [-1, 1],
+    [1, 1],
+    [1, 0],
+    [1, -1],
+    [0, -1],
+    [-1, -1],
     [-1, 0],
-    [-1, -1]
+    [-1, 1],
   ];
   return new RoomPosition(this.x + adjacentPos[direction][0], this.y + adjacentPos[direction][1], this.roomName);
 };

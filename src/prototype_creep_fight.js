@@ -19,17 +19,20 @@ Creep.prototype.findClosestEnemy = function() {
   });
 };
 
-Creep.prototype.fleeDir = function(dirToHostile, order = [3, 4, 5, 2, 6, 1, 7, 0]) {
+Creep.prototype.fleeDir = function(dirToHostile) {
+  let i;
+  let offset;
   let direction;
   let pos;
-  _.each(order, d => {
-    direction = 1 + (dirToHostile + d - 1) % 8;
+  for (i = 0; i < 8; i++) {
+    offset = i % 2 ? (i - 1) / 2 + 5 : -i / 2 + 4;
+    direction = 1 + (dirToHostile + offset - 1) % 8;
     pos = this.pos.getAdjacentPosition(direction);
     if (pos.lookFor(LOOK_TERRAIN)[0] !== 'wall' &&
       pos.lookFor('creep').length === 0) {
       return direction;
     }
-  });
+  }
   return 0;
 };
 
