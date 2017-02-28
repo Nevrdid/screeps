@@ -43,7 +43,7 @@ global.config = {
   },
 
   debug: {
-    getPartsConfLogs: false,
+    fight: false,
     queue: false,
     spawn: false
   },

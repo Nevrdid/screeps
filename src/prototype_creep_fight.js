@@ -37,7 +37,6 @@ Creep.prototype.fleeDir = function(dirToHostile) {
 };
 
 Creep.prototype.fleeFromHostile = function(hostile) {
-  this.rangedAttack(hostile);
   if (this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49) {
     this.moveTo(25, 25);
     return true;
@@ -50,13 +49,7 @@ Creep.prototype.fleeFromHostile = function(hostile) {
 };
 
 Creep.prototype.attackHostile = function(hostile) {
-  let range;
-  if (this.hits < 0.5 * this.hitsMax) {
-    return this.fleeFromHostile(hostile);
-  }
-
-  range = this.pos.getRangeTo(hostile);
-  if (range > 3) {
+  if (this.hits > 0.5 * this.hitsMax && this.pos.getRangeTo(hostile) > 3) {
     let search = PathFinder.search(
       this.pos, {
         pos: hostile.pos,
@@ -69,13 +62,11 @@ Creep.prototype.attackHostile = function(hostile) {
 
     if (search.incomplete) {
       this.moveRandom();
+    } else {
+      this.move(this.pos.getDirectionTo(search.path[0]));
     }
-    let returnCode = this.move(this.pos.getDirectionTo(search.path[0]));
-  }
-  if (range === 0) {
-    this.log('Range: ' + range);
-  }
-  if (range < 3) {
+
+  } else {
     this.fleeFromHostile(hostile);
   }
   this.rangedAttack(hostile);
@@ -95,8 +86,7 @@ Creep.prototype.healMyCreeps = function() {
   if (myCreeps.length > 0) {
     this.say('heal', true);
     this.moveTo(myCreeps[0]);
-    let range = this.pos.getRangeTo(myCreeps[0]);
-    if (range <= 1) {
+    if (this.pos.getRangeTo(myCreeps[0]) <= 1) {
       this.heal(myCreeps[0]);
     } else {
       this.rangedHeal(myCreeps[0]);
@@ -121,8 +111,7 @@ Creep.prototype.healAllyCreeps = function() {
   if (allyCreeps.length > 0) {
     this.say('heal ally', true);
     this.moveTo(allyCreeps[0]);
-    let range = this.pos.getRangeTo(allyCreeps[0]);
-    if (range <= 1) {
+    if (this.pos.getRangeTo(allyCreeps[0]) <= 1) {
       this.heal(allyCreeps[0]);
     } else {
       this.rangedHeal(allyCreeps[0]);
@@ -130,6 +119,24 @@ Creep.prototype.healAllyCreeps = function() {
     return true;
   }
 };
+
+Creep.prototype.quickFirstMove = function(target, range, incompleteFct) {
+  let search = PathFinder.search(
+    this.pos, {
+      pos: target.pos,
+      range: range
+    }, {
+      roomCallback: this.room.getAvoids({}, true),
+      maxRooms: 0
+    }
+  );
+
+  if (search.incomplete && this.incompleteFct) {
+    this.incompleteFct();
+    return false;
+  }
+  let returnCode = this.move(this.pos.getDirectionTo(search.path[0]));
+}
 
 Creep.prototype.moveToHostileConstructionSites = function() {
   let constructionSite = this.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
@@ -241,13 +248,9 @@ Creep.prototype.fightRampart = function(target) {
 
   let position = target.pos.findClosestStructure(FIND_MY_STRUCTURES, STRUCTURE_RAMPART);
 
-  if (position === null) {
+  if (position === null || target.pos.getRangeTo(position) > 3) {
     return false;
   }
-  if (target.pos.getRangeTo(position) > 3) {
-    return false;
-  }
-
   let callback = this.room.getMatrixCallback;
 
   // TODO Extract the callback method to ... e.g. room and replace this.room.getAvoids
@@ -274,13 +277,13 @@ Creep.prototype.fightRampart = function(target) {
     }
   );
 
-  let returnCode = this.move(this.pos.getDirectionTo(search.path[0]));
-  if (returnCode === OK || returnCode === ERR_TIRED) {
+  let moveReturn = this.move(this.pos.getDirectionTo(search.path[0]));
+  if (moveReturn === OK || moveReturn === ERR_TIRED) {
     return true;
   }
-
-  this.log('creep_fight.fightRampart returnCode: ' + returnCode + ' path: ' + JSON.stringify(search.path[0]));
-
+  if (config.debug.fight) {
+    this.log('creep_fight.fightRampart moveCode: ' + moveCode + ' path: ' + JSON.stringify(search.path[0]));
+  }
   let targets = this.pos.findInRange(FIND_HOSTILE_CREEPS, 3, {
     filter: this.room.findAttackCreeps
   });
