@@ -46,7 +46,7 @@ brain.setConstructionSites = function() {
 
 brain.addToStats = function(name) {
   let role = Memory.creeps[name].role;
-  global.brain.modifyRoleAmount(role, -1);
+  brain.stats.modifyRoleAmount(role, -1);
 };
 
 brain.handleUnexpectedDeadCreeps = function(name, creepMemory) {

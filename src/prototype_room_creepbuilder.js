@@ -325,7 +325,7 @@ Room.prototype.spawnCreateCreep = function(creep) {
     if (spawn.createCreep(partConfig, name, memory) != name) {
       continue;
     }
-    brain.stats.modifyRoleAmount(role, 1);
+    brain.stats.modifyRoleAmount(creep.role, 1);
     return true;
   }
   return false;

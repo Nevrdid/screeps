@@ -15,6 +15,19 @@ brain.stats.init = function() {
   });
 };
 
+brain.stats.modifyRoleAmount = function(role, diff) {
+  let userName = Memory.username;
+  if (!config.stats.enabled || !userName) {return false;}
+  if (Memory.stats && Memory.stats[userName] && Memory.stats[userName].roles) {
+    let roleStat = Memory.stats[userName].roles[role];
+    let previousAmount = roleStat ? roleStat : 0;
+    let amount = (diff < 0 && previousAmount < -diff) ? 0 : previousAmount + diff;
+    brain.stats.add(['roles', role], amount);
+  } else {
+    brain.stats.init();
+  }
+};
+
 /**
  * stats.add use for push anything into Memory.stats at a given place.
  *
@@ -118,17 +131,4 @@ brain.stats.addRoom = function(roomName, previousCpu) {
     });
   }
   return true;
-};
-
-brain.stats.modifyRoleAmount = function(role, diff) {
-  let userName = Memory.username;
-  if (!config.stats.enabled || !userName) {return false;}
-  if (Memory.stats && Memory.stats[userName] && Memory.stats[userName].roles) {
-    let roleStat = Memory.stats[userName].roles[role];
-    let previousAmount = roleStat ? roleStat : 0;
-    let amount = (diff < 0 && previousAmount < -diff) ? 0 : previousAmount + diff;
-    brain.stats.add(['roles', role], amount);
-  } else {
-    brain.stats.init();
-  }
 };
