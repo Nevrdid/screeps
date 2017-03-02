@@ -92,8 +92,7 @@ Creep.prototype.healMyCreeps = function() {
   if (myCreeps.length > 0) {
     this.say('heal', true);
     this.moveTo(myCreeps[0]);
-    let range = this.pos.getRangeTo(myCreeps[0]);
-    if (range <= 1) {
+    if (this.pos.getRangeTo(myCreeps[0]) <= 1) {
       this.heal(myCreeps[0]);
     } else {
       this.rangedHeal(myCreeps[0]);
@@ -166,17 +165,10 @@ Creep.prototype.moveToHostileConstructionSites = function() {
 Creep.prototype.handleDefender = function() {
   let hostile = this.findClosestEnemy();
 
-  let hostiles = this.pos.findInRange(FIND_HOSTILE_CREEPS, 3, {
-    filter: function(object) {
-      return !brain.isFriend(object.owner.username);
-    }
-  });
-
   if (this.fightRampart(hostile)) {
     return true;
   }
 
-  var range;
   if (hostile !== null) {
     return this.attackHostile(hostile);
   }
@@ -392,7 +384,7 @@ Creep.prototype.siege = function() {
 
   var posLast = path[path.length - 1];
   if (path.length === 0 || !target.pos.isEqualTo(posLast.x, posLast.y)) {
-    var structure = this.pos.findClosestStructure(FIND_STRUCTURES, [STRUCTURE_RAMPART]);
+    var structure = this.pos.findClosestStructure(FIND_STRUCTURES, STRUCTURE_RAMPART);
     returnCode = this.moveTo(structure);
     target = structure;
   } else {
