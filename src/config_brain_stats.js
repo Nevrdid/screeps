@@ -1,6 +1,5 @@
 'use strict';
 
-
 brain.stats.init = function() {
   let userName = Memory.username;
   if (!config.stats.enabled || !userName) {return false;}
