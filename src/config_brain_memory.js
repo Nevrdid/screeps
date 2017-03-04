@@ -107,18 +107,29 @@ brain.cleanSquads = function() {
 };
 
 brain.cleanRooms = function() {
-  if (Game.time % 300 === 0) {
-    for (let name in Memory.rooms) {
-      // Check for reserved rooms
-      let memory = Memory.rooms[name];
-      if (!Memory.rooms[name].lastSeen) {
-        //        console.log('Deleting ' + name + ' from memory no `last_seen` value');
-        delete Memory.rooms[name];
+  let lowInterval = Game.time % 50;
+  let longInterval = Game.time % 300;
+  if (!lowInterval) {
+    let cs;
+    let roomName;
+    for (roomName in Memory.rooms) {
+      cs = Game.rooms[roomName].find(FIND_CONSTRUCTION_SITES);
+      Memory.rooms[roomName].roadsHealthPerc = _(cs)
+      .sum(c => c.progress / c.progressTotal)
+      .value() * 100 / cs.length;
+
+      if (longInterval) {
         continue;
       }
-      if (Memory.rooms[name].lastSeen < Game.time - config.room.lastSeenThreshold) {
-        console.log(`Deleting ${name} from memory older than ${config.room.lastSeenThreshold}`);
-        delete Memory.rooms[name];
+      // Check for reserved rooms
+      if (!Memory.rooms[roomName].lastSeen) {
+        //        console.log('Deleting ' + name + ' from memory no `last_seen` value');
+        delete Memory.rooms[roomName];
+        continue;
+      }
+      if (Memory.rooms[roomName].lastSeen < Game.time - config.room.lastSeenThreshold) {
+        console.log(`Deleting ${roomName} from memory older than ${config.room.lastSeenThreshold}`);
+        delete Memory.rooms[roomName];
         continue;
       }
     }
