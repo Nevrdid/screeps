@@ -61,14 +61,38 @@ roles.scout.execute = function(creep) {
       }
       if (!setNewTarget(creep)) {
         creep.memory.search.levels.push([]);
-        for (let room of creep.memory.search.levels[creep.memory.search.level]) {
-          let rooms = Game.map.describeExits(room);
-          for (let direction in rooms) {
-            let roomNext = rooms[direction];
-            if (haveNotSeen(creep, roomNext)) {
-              creep.memory.search.levels[creep.memory.search.level + 1].push(roomNext);
-              creep.memory.search.target = roomNext;
+        let found = false;
+        let I = 0
+        while(!found && I < 4) {
+          for (let room of creep.memory.search.levels[creep.memory.search.level + I]) {
+            let rooms = Game.map.describeExits(room);
+            for (let direction in rooms) {
+              let roomNext = rooms[direction];
+              if (haveNotSeen(creep, roomNext)) {
+                creep.memory.search.levels[creep.memory.search.level + I + 1].push(roomNext);
+                creep.memory.search.target = roomNext;
+                found = true;
+              }
             }
+          }
+          I++;
+        }
+        if (!found ) {
+          let min = infinity;
+          let minRoom;
+          for (let room of creep.memory.search.levels[creep.memory.search.level]) {
+            if (
+              Game.rooms[room] && Game.rooms[room].memory.lastSeen < Game.time &&
+              Game.rooms[room] && Game.rooms[room].memory.lastSeen < min
+            ) {
+              min = Game.rooms[room] && Game.rooms[room].memory.lastSeen;
+              minRoom = room;
+              found = true;
+
+            }
+          }
+          if (found) {
+            creep.memory.search.target = minRoom;
           }
         }
         creep.memory.search.level++;
@@ -130,6 +154,10 @@ roles.scout.execute = function(creep) {
 
     if (creep.isStuck()) {
       creep.moveRandom();
+      creep.memory.scoutSkip = true;
+      //creep.memory.last[0] = null;
+      creep.memory.last[1] = null;
+      //creep.memory.last[2] = null;
       creep.say('ImStuck', true);
       creep.log('Scout Stuck, Randomly Moving: ' + JSON.stringify(creep.memory.last) + ' ' + JSON.stringify(creep.isStuck()));
       return true;

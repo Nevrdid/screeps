@@ -6,7 +6,7 @@ function getOppositeDirection(direction) {
 }
 
 Creep.prototype.mySignController = function() {
-  if (config.info.signController && this.room.exectueEveryTicks(config.info.resignInterval)) {
+  if (config.info.signController && this.room.executeEveryTicks(config.info.resignInterval)) {
     let text = config.info.signText;
     if (config.quests.enabled && this.memory.role === 'reserver') {
       if (Math.random() < config.quests.signControllerPercentage) {
@@ -65,6 +65,7 @@ Creep.prototype.handle = function() {
 
   if (this.memory.recycle) {
     Creep.recycleCreep(this);
+    if (this.room.controller.level < 4 || this.room.memory.underSiege) this.suicide()
     return;
   }
 

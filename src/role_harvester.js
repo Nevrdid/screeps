@@ -18,30 +18,21 @@
 roles.harvester = {};
 
 roles.harvester.settings = {
-  param: ['controller.level', 'energyAvailable'],
-  layoutString: 'MWC',
-  amount: {
-    1: [2, 1, 1],
-    3: {
-      0: [2, 1, 1]
+    param: ['memory.isRoomEnergySafe', 'memory.isStorageHostile'],
+    prefixString: {1: 'WMC'}
+    layoutString: {
+	    0: 'MWC',
+	    1: 'MC'
+    },
+    amount: {
+        0: [2, 1, 1],
+        1: [1, 2]
+    },
+    maxLayoutAmount: {
+	    0: {0: 6, 1:999},
+	    1: 12
     }
-  },
-  maxLayoutAmount: 6
-};
-roles.harvester.updateSettings = function(room, creep) {
-  if (room.storage && room.storage.my && room.storage.store.energy > config.creep.energyFromStorageThreshold && room.energyAvailable > 350 && !room.memory.misplacedSpawn) {
-    return {
-      prefixString: 'WMC',
-      layoutString: 'MC',
-      amount: [1, 2],
-      maxLayoutAmount: 12
-    };
-  } else if (room.storage && !room.storage.my) {
-    return {
-      maxLayoutAmount: 999
-    };
-  }
-};
+ };
 
 roles.harvester.stayInRoom = true;
 roles.harvester.buildRoad = true;

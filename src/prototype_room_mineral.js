@@ -106,7 +106,7 @@ Room.prototype.orderMinerals = function() {
   let minerals = this.find(FIND_MINERALS);
   let resource = minerals[0].mineralType;
 
-  if (this.exectueEveryTicks(20)) {
+  if (this.executeEveryTicks(20)) {
     let baseMinerals = [
       RESOURCE_HYDROGEN,
       RESOURCE_OXYGEN,

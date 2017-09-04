@@ -12,6 +12,24 @@
 
 roles.nextroomer = {};
 
+roles.nextroomer.settings = {
+    param: ['memory.energyAvailable'],
+  layoutString : 'MWC',
+  amount : [2, 1, 1],
+  maxLayoutAmount : {
+      350 : 1,
+      700 : 2,
+      1400 : 4,
+      2800 : 6,
+  }
+};
+
+roles.nextroomer.updateSettings = function(room, creep) {
+  if (Game.rooms[creep.routing.targetRoom].memory.underSiege) {
+    return {prefixString: 'HHH'}
+  }
+};
+
 roles.nextroomer.died = function(name, creepMemory) {
   if (!creepMemory || !creepMemory.routing || !creepMemory.routing.route || !creepMemory.routing.routePos) {
     console.log('DIED', name, 'routing not in memory');
@@ -25,11 +43,6 @@ roles.nextroomer.died = function(name, creepMemory) {
   // Works but was annoying due to suppen
   console.log('DIED:', message);
   return true;
-};
-
-roles.nextroomer.settings = {
-  layoutString: 'MWC',
-  amount: [6, 3, 3]
 };
 
 roles.nextroomer.checkForRampart = function(coords) {
@@ -203,6 +216,8 @@ roles.nextroomer.settle = function(creep) {
   if (room.memory.underSiege && room.controller && room.controller.level >= 3) {
     creep.log('underSiege: ' + room.memory.attackTimer);
     return roles.nextroomer.underSiege(creep);
+  } else if (config.creep.defByNextroom && room.controller.level < 3) {
+    creep.callDefender(config.creep.defByNextroom);
   }
 
   if (creep.carry.energy > 0) {
@@ -224,9 +239,11 @@ roles.nextroomer.settle = function(creep) {
   }
 
   let methods = [Creep.getEnergy];
+  /** Why ? also l 251
   if (creep.room.controller.ticksToDowngrade < 1500 || creep.room.controller.progress > creep.room.controller.progressTotal) {
     methods.push(Creep.upgradeControllerTask);
   }
+  **/
 
   let spawnCSs = creep.room.findPropertyFilter(FIND_MY_CONSTRUCTION_SITES, 'structureType', [STRUCTURE_SPAWN]);
   let spawns = creep.room.findPropertyFilter(FIND_MY_STRUCTURES, 'structureType', [STRUCTURE_SPAWN]);

@@ -17,7 +17,7 @@ roles.reserver.settings = {
   maxLayoutAmount: 1
 };
 roles.reserver.updateSettings = function(room, creep) {
-  let level = creep.level ? creep.level : 1;
+  let level = creep.level || 1;
   if (level === 2) {
     return {
       amount: [2, 2]

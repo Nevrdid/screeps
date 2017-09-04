@@ -80,11 +80,11 @@ global.config = {
     scoutMinControllerLevel: 4,
     ttlPerRoomForScout: 500,
     numberOfNextroomers: 10,
-    nextroomerInterval: 500,
+    nextroomerInterval: Math.floor(1500 / 10),
     maxRooms: 20,
     revive: true,
     maxDistance: 17,
-    minNewRoomDistance: 2,
+    minNewRoomDistance: 1,
     minEnergyForActive: 1000,
     minDowngradPercent: 90,
     notify: false
@@ -94,7 +94,7 @@ global.config = {
     ticksUntilHelpCheck: 100,
     maxHelpersAmount: 5,
     helpTreshold: 1500,
-    needTreshold: 750,
+    needTreshold: 650,
     maxDistance: 7,
     factor: 0.2
   },
@@ -152,7 +152,8 @@ global.config = {
     structurer: true,
     structurerInterval: 1500,
     structurerMinEnergy: 1300,
-    reserverDefender: true,
+    defByReserver: 2,
+    defByNextroom: 3,
     energyFromStorageThreshold: 2000,
     sortParts: true,
     swarmSourceHarvestingMaxParts: 10
@@ -176,12 +177,13 @@ global.config = {
     reviveEnergyCapacity: 1000,
     reviveEnergyAvailable: 1000,
     reviveStorageAvailable: 3000,
-    scoutInterval: 1499,
+    scoutsAmount: 3,
+    scoutInterval : 1500/3
     scoutSkipWhenStuck: true, // Useful for novice areas.
     scout: true, // TODO somehow broken ?? Is it broken ??
     upgraderMinStorage: 0,
     upgraderStorageFactor: 2,
-    lastSeenThreshold: 1000000,
+    lastSeenThreshold: 250000,
     notify: false
   },
 
@@ -233,9 +235,10 @@ global.config = {
       defender: 12,
       defendranged: 13,
       nextroomer: 15,
-      carry: 17,
-      sourcer: 18,
-      reserver: 19
+      sourcer : 17,
+      reserver : 18,
+      scout : 19,
+      carry : 20
     }
   }
 };

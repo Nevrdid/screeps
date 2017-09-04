@@ -55,13 +55,7 @@ Room.prototype.attackRoom = function() {
     };
 
     let roomsMy = _.sortBy(Memory.myRooms, sortByDistance);
-
-    Game.rooms[roomsMy[0]].memory.queue.push({
-      role: 'autoattackmelee',
-      routing: {
-        targetRoom: room.name
-      }
-    });
+    Game.rooms[roomsMy[0]].checkRoleToSpawn('autoattackmelee', 3, undefined, room.name, undefined, this.name);
 
     return true;
   }

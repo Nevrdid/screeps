@@ -1,6 +1,6 @@
 'use strict';
 
-Room.prototype.exectueEveryTicks = function(ticks) {
+Room.prototype.executeEveryTicks = function(ticks) {
   return (Game.time + this.controller.pos.x + this.controller.pos.y) % ticks === 0;
 };
 
@@ -26,4 +26,18 @@ Room.prototype.execute = function() {
     Game.notify('Executing room failed: ' + this.name + ' ' + err + ' ' + err.stack, 30);
     return false;
   }
+};
+
+Room.prototype.isRoomEnergySafe = function() {
+	if (this.storage && this.storage.my
+		&& this.storage.store.energy > config.creep.energyFromStorageThreshold
+		&& this.memory.energyAvailable >= 350 && this.energyAvailable >= 350
+    && !this.memory.misplacedSpawn) {
+		return 1;
+	}
+	return 0;
+}
+Room.prototype.isStorageHostile = function () {
+	if (this.storage && !this.storage.my) return 1;
+	return 0;
 };

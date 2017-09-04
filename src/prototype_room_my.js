@@ -16,7 +16,6 @@ Room.prototype.myHandleRoom = function() {
   if (!this.memory.queue) {
     this.memory.queue = [];
   }
-
   var hostiles = this.getEnemys();
   if (hostiles.length === 0) {
     delete this.memory.hostile;
@@ -32,6 +31,13 @@ Room.prototype.myHandleRoom = function() {
       };
     }
   }
+
+  let interval = 10;
+  this.memory.isRoomEnergySafe = this.executeEveryTicks(interval) ?
+    this.isRoomEnergySafe() : this.memory.isRoomEnergySafe || 0;
+  this.memory.isStorageHostile = room.executeEveryTicks(interval) ?
+    this.isStorageHostile() : this.memory.isStorageHostile || 0;
+
   return this.executeRoom();
 };
 
@@ -165,20 +171,12 @@ Room.prototype.handleScout = function() {
   if (this.name === 'sim') {
     return false;
   }
-  let shouldSpawn = (
-    this.exectueEveryTicks(config.room.scoutInterval) &&
+  if (
+    this.executeEveryTicks(50) &&
     this.controller.level >= 2 &&
-    this.memory.queue.length === 0 &&
     config.room.scout
-  );
-  if (shouldSpawn) {
-    let scout_spawn = {
-      role: 'scout'
-    };
-    if (!this.inQueue(scout_spawn)) {
-      this.memory.queue.push(scout_spawn);
-    }
-  }
+  ) this.checkRoleToSpawn('scout', config.room.scoutsAmount,undefined,undefined, undefined, this.name);
+
 };
 
 Room.prototype.checkNeedHelp = function() {
@@ -242,7 +240,7 @@ Room.prototype.checkForEnergyTransfer = function() {
 
   Memory.needEnergyRooms = Memory.needEnergyRooms || [];
   this.memory.energyAvailableSum = this.memory.energyAvailableSum || 0;
-  if (!this.exectueEveryTicks(config.carryHelpers.ticksUntilHelpCheck)) {
+  if (!this.executeEveryTicks(config.carryHelpers.ticksUntilHelpCheck)) {
     let factor = config.carryHelpers.factor;
     this.memory.energyAvailable = (1 - factor) * this.memory.energyAvailable + (factor) * this.energyAvailable || 0;
     this.memory.energyAvailableSum += this.memory.energyAvailable;
@@ -363,12 +361,12 @@ Room.prototype.executeRoom = function() {
       if (this.memory.attackTimer > 300) {
         role = 'defendmelee';
       }
-      if (this.exectueEveryTicks(250)) {
+      if (this.executeEveryTicks(250)) {
         this.checkRoleToSpawn(role, 1, undefined, this.name, 1, this.name);
       }
     }
 
-    if (this.exectueEveryTicks(10)) {
+    if (this.executeEveryTicks(10)) {
       this.log('Under attack from ' + hostiles[0].owner.username);
     }
     if (hostiles[0].owner.username != 'Invader') {
@@ -544,7 +542,7 @@ Room.prototype.reviveRoom = function() {
   }
 
   if (!config.revive.disabled && this.controller.level >= 1 &&
-    this.exectueEveryTicks(config.nextRoom.nextroomerInterval)) {
+    this.executeEveryTicks(config.nextRoom.nextroomerInterval)) {
     this.reviveMyNow();
   }
   return true;

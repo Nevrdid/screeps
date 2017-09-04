@@ -16,14 +16,14 @@ roles.carry.flee = true;
 roles.carry.boostActions = ['capacity'];
 
 roles.carry.settings = {
-  param: ['energyCapacityAvailable'],
+  param: ['memory.energyAvailable'],
   prefixString: {
     300: '',
     550: 'W'
   },
   layoutString: 'MC',
   amount: config.carry.sizes,
-  maxLayoutAmount: 1
+  maxLayoutAmount: 1,
 };
 
 roles.carry.updateSettings = function(room, creep) {
