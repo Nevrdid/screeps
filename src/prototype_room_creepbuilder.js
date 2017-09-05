@@ -19,7 +19,7 @@ Room.prototype.creepMem = function(role, targetId, targetRoom, level, base) {
  * @return {Number}        the priority for creep
  */
 Room.prototype.getPriority = function(object) {
-  let priority = config.priorityQueue;
+  let priority = config.basic.creeps.priorityQueue;
   let target = object.routing && object.routing.targetRoom;
   if (target === this.name) {
     return priority.sameRoom[object.role] || 4;
@@ -46,7 +46,7 @@ Room.prototype.spawnCheckForCreate = function() {
     this.memory.queue.shift();
     return false;
   }
-  creep.ttl = creep.ttl || config.creep.queueTtl;
+  creep.ttl = creep.ttl || config.basic.creeps.queueTtl;
   if (this.getSpawnableSpawns().length === 0) {
     creep.ttl--;
   }
@@ -104,7 +104,7 @@ Room.prototype.inRoom = function(creepMemory, amount = 1) {
     if (j >= amount) {
       this.memory.roles[creepMemory.role] = true;
       /**
-      if (config.debug.queue) {
+      if (config.advanced.debug.queue) {
         this.log('Already enough ' + creepMemory.role);
       }
       **/
@@ -131,7 +131,7 @@ Room.prototype.checkRoleToSpawn = function(role, amount, targetId, targetRoom, l
   Object.assign(creepMemory, additionalMemory);
   if (this.inQueue(creepMemory) || this.inRoom(creepMemory, amount)) { return false; }
 
-  if (config.debug.queue) {
+  if (config.advanced.debug.queue) {
     this.log('Add ' + creepMemory.role + ' to queue. ' + JSON.stringify(creepMemory));
   }
   return this.memory.queue.push(creepMemory);
@@ -168,7 +168,7 @@ Room.prototype.getPartsStringDatas = function(parts, energyAvailable) {
   ret.cost = Memory.layoutsCost[parts] || 0;
   ret.parts = global.utils.stringToParts(parts);
   ret.len = ret.parts.length;
-  if (config.debug.spawn) {
+  if (config.advanced.debug.spawn) {
     this.log(`getPartsStringDatas ret: ${JSON.stringify(ret)} parts: ${JSON.stringify(parts)}`);
   }
   if (ret.cost) {
@@ -249,7 +249,7 @@ Room.prototype.applyAmount = function(input, amount) {
   _.forEach(amount, function(element, index) {
     output += _.repeat(input.charAt(index), element);
   });
-  if (config.debug.spawn) {
+  if (config.advanced.debug.spawn) {
     this.log(`applyAmount input: ${JSON.stringify(input)} amount: ${JSON.stringify(amount)} output: ${JSON.stringify(output)}`);
   }
   return output;
@@ -330,10 +330,10 @@ Room.prototype.getPartConfig = function(creep) {
     }
   }
 
-  if (config.debug.spawn) {
+  if (config.advanced.debug.spawn) {
     this.log('Spawning ' + creep.role + ' - - - Body: ' + JSON.stringify(prefix.parts) + ' - ' + maxRepeat + ' * ' + JSON.stringify(layout.parts) + ' - ' + JSON.stringify(sufix.parts) + ' - parts: ' + JSON.stringify(parts));
   }
-  return config.creep.sortParts ? this.sortParts(parts, layout) : parts;
+  return config.basic.creeps.sortParts ? this.sortParts(parts, layout) : parts;
 };
 
 Room.prototype.getSpawnableSpawns = function() {

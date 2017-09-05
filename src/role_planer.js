@@ -16,34 +16,24 @@ roles.planer.settings = {
 };
 
 roles.planer.action = function(creep) {
-  var methods = [Creep.getEnergy];
+  /**
+  var methods = (creep.room.storage && creep.storage.store.energy > config.basic.creeps.energyFromStorageThreshold) ? ['getEnergyFromStorage'] : []
 
-  methods.push(Creep.constructTask);
-  methods.push(Creep.buildRoads);
+    methods.push('getDroppedEnergy');
+    methods.push('getEnergyFromHostileStructures');
+    **/
+
+    var methods = ['getEnergy'];
+    methods.push('constructTask');
+    methods.push('buildRoads');
+
   if (creep.room.memory.misplacedSpawn) {
-    methods.push(Creep.transferEnergy);
-    methods.push(Creep.repairStructure);
+    methods.push('transferEnergy');
+    methods.push('repairStructure');
   } else {
-    methods.push(Creep.recycleCreep);
+    methods.push('recycleCreep');
   }
-  methods.push(Creep.upgradeControllerTask);
+  methods.push('upgradeControllerTask');
 
-  return Creep.execute(creep, methods);
-};
-
-roles.planer.execute = function(creep) {
-  creep.log('!!!! Execute !!!');
-  let methods = [Creep.getEnergy];
-
-  methods.push(Creep.constructTask);
-  methods.push(Creep.buildRoads);
-  if (creep.room.memory.misplacedSpawn) {
-    methods.push(Creep.transferEnergy);
-    methods.push(Creep.repairStructure);
-  } else {
-    methods.push(Creep.recycleCreep);
-  }
-  methods.push(Creep.upgradeControllerTask);
-
-  return Creep.execute(creep, methods);
+  return creep.execute(methods);
 };

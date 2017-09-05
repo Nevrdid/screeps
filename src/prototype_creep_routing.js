@@ -1,5 +1,21 @@
 'use strict';
 
+Creep.prototype.fleeFromSk = function(fleeDistance = 3) {
+  var target = creep.findClosestSourceKeeper();
+  if (target !== null) {
+    let range = creep.pos.getRangeTo(target);
+    if (range > fleeDistance && !creep.memory.routing.reached) {
+      creep.memory.routing.reverse = false;
+    }
+    if (range < fleeDistance) {
+      creep.memory.routing.reverse = true;
+      if(creep.memory.routing.reached) {
+        delete creep.memory.routing.reached;
+      }
+    }
+  }
+};
+
 Creep.prototype.getRoute = function() {
   if (!this.memory.routing) {
     this.log('No routing why?');
@@ -38,9 +54,35 @@ Creep.prototype.getRoutePos = function(route) {
   this.memory.routing.routePos = routePos;
   return routePos;
 };
+Creep.prototype.handleOutOfPath = function(route, routePos, path) {
 
+  if (Room.isRoomUnderAttack(this.room.name)) {
+    this.moveTo(path[0].x, path[0].y, {
+      ignoreCreeps: true
+    });
+    return -1;
+  }
+  if (routePos < (route.length - 1) && Room.isRoomUnderAttack(route[routePos + 1].room)) {
+    return -1;
+  }
+
+  let posTarget = path[Math.floor(path.length / 2)];
+
+  if (!posTarget) {
+    return -1;
+  }
+  let returnCode = this.moveTo(posTarget.x, posTarget.y, {
+    ignoreCreeps: true
+  });
+  if (returnCode != OK && returnCode != ERR_TIRED) {
+    this.log('newmove: moveTo: ' + returnCode + ' ' + JSON.stringify(path[path.length / 2]) + ' ' + (path.length / 2));
+  }
+  return -1;
+}
 Creep.prototype.getPathPos = function(route, routePos, path) {
   // TODO solve better, was introduced due to call of moveByPathMy
+
+  if (!path) return -1;
   if (!this.memory.routing) {
     this.memory.routing = {};
   }
@@ -50,39 +92,7 @@ Creep.prototype.getPathPos = function(route, routePos, path) {
   if (!pos || !this.pos.isEqualTo(pos.x, pos.y)) {
     pathPos = _.findIndex(path, i => i.x === this.pos.x && i.y === this.pos.y);
     if (pathPos === -1) {
-      // Not sure if this method is the best place
-      // this.log('routing: Not on path, pos: ' + JSON.stringify(this.pos) + '
-      // path: ' + JSON.stringify(path));
-
-      if (Room.isRoomUnderAttack(this.room.name)) {
-        this.moveTo(path[0].x, path[0].y, {
-          ignoreCreeps: true
-        });
-        return -1;
-      }
-
-      // TODO Check that we are not standing on another path
-      // TODO Check that we are not standing on the room borders
-      if (routePos < (route.length - 1) && Room.isRoomUnderAttack(route[routePos + 1].room)) {
-        return -1;
-      }
-
-      // Move to the middle of the path, something else could be better
-      // When using the costmatrix, that should be fine
-      let posTarget = path[Math.floor(path.length / 2)];
-
-      // TODO when does this happen?
-      if (!posTarget) {
-        // this.log('config_creep_routing.move middle: ' + posTarget);
-        return -1;
-      }
-      let returnCode = this.moveTo(posTarget.x, posTarget.y, {
-        ignoreCreeps: true
-      });
-      if (returnCode != OK && returnCode != ERR_TIRED) {
-        this.log('newmove: moveTo: ' + returnCode + ' ' + JSON.stringify(path[path.length / 2]) + ' ' + (path.length / 2));
-      }
-      return -1;
+      this.handleOutOfPath(route, routePos, path);
     }
   }
   return pathPos;
@@ -172,40 +182,15 @@ Creep.prototype.moveByPathMy = function(route, routePos, start, target, skipPreM
   let unit = roles[this.memory.role];
   // Somehow reset the pathPos if the path has changed?!
   let path = this.room.getPath(route, routePos, start, target);
-  if (!path) {
-    // TODO this could be because the targetId Object does not exist anymore
-    // this.log('newmove: no path legacy fallback: ' + this.memory.base + ' ' +
-    // this.room.name + ' ' + this.memory.base + ' ' +
-    // this.memory.routing.targetRoom + ' routePos: ' + routePos + ' route: ' +
-    // JSON.stringify(route));
-    this.say('R:no path');
-    this.log('R:no path');
-    // this.log('R:no path: pathStart-' + this.memory.routing.targetId);
-    if (!skipPreMove) {
-      if (unit.preMove) {
-        if (unit.preMove(this)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
 
   let pathPos = this.getPathPos(route, routePos, path);
   if (pathPos < 0) {
     // this.say('R:pos -1');
     this.memory.routing.pathPos = pathPos;
     // TODO this is duplicated, find a better order? Or have another method
-    if (!skipPreMove) {
-      if (unit.preMove) {
-        // this.say('R:-1 pre');
-        if (unit.preMove(this)) {
-          return true;
-        }
-        this.say('R:-1 no pre');
-      }
-    }
-    if (path.length === 0) {
+    if (!skipPreMove && unit.preMove && unit.preMove(this))
+      return true;
+    if (!path || path.length === 0) {
       this.log('config_creep_routing.followPath no pos: ' + JSON.stringify(path));
       return false;
     }
@@ -227,12 +212,12 @@ Creep.prototype.moveByPathMy = function(route, routePos, start, target, skipPreM
       }, {
         roomCallback: this.room.getCostMatrixCallback(posFirst, true),
         maxRooms: 1,
-        swampCost: config.layout.swampCost,
-        plainCost: config.layout.plainCost
+        swampCost: config.basic.room.layout.swampCost,
+        plainCost: config.basic.room.layout.plainCost
       }
     );
 
-    if (config.visualizer.enabled && config.visualizer.showPathSearches) {
+    if (config.advanced.visualizer.enabled && config.advanced.visualizer.showPathSearches) {
       visualizer.showSearch(search);
     }
 
@@ -275,6 +260,7 @@ Creep.prototype.moveByPathMy = function(route, routePos, start, target, skipPreM
         // this.log('creep_routing.followPath reached: ' + pathPos + '
         // path.length: ' + path.length);
         this.memory.routing.reached = true;
+        this.memory.timeToTravel = 1500 - this.ticksToLive;
         return action(this);
       }
     }
@@ -283,7 +269,7 @@ Creep.prototype.moveByPathMy = function(route, routePos, start, target, skipPreM
   // build roads
   if (unit.buildRoad) {
     const target = Game.getObjectById(this.memory.routing.targetId);
-    if (config.buildRoad.buildToOtherMyRoom || !target || target.structureType !== STRUCTURE_STORAGE) {
+    if (config.basic.structures.roads.buildToOtherMyRoom || !target || target.structureType !== STRUCTURE_STORAGE) {
       this.buildRoad();
     }
   }
@@ -324,6 +310,11 @@ Creep.prototype.moveByPathMy = function(route, routePos, start, target, skipPreM
   }
 
   this.move(directions.direction);
+
+  if(this.isStuck()) {
+    this.say('...');
+    this.moveCreep(path[pathPos + 1], directions.direction > 4  ? directions.direction -4 : directions.direction + 4);
+  }
 
   this.memory.routing.routePos = routePos;
   this.memory.routing.pathPos = pathPos + directions.pathOffset;

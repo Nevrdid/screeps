@@ -1,48 +1,24 @@
 'use strict';
 
-Creep.prototype.handleStructurer = function() {
-  var structure;
-
-  if (!this.memory.routing.targetId) {
-    return this.cleanSetTargetId();
+Creep.prototype.recycleCreep = function() {
+  if (this.memory.role === 'planer') {
+    this.room.buildStructures();
   }
 
-  structure = Game.getObjectById(this.memory.routing.targetId);
-  if (structure === null) {
-    delete this.memory.routing.targetId;
-    return;
+  let spawn = this.pos.findClosestByRangePropertyFilter(FIND_MY_STRUCTURES, 'structureType', [STRUCTURE_SPAWN]);
+  if (!spawn) {
+    spawn = Game.rooms[this.memory.base].findPropertyFilter(FIND_MY_STRUCTURES, 'structureType', [STRUCTURE_SPAWN])[0];
   }
-
-  let search = PathFinder.search(
-    this.pos, {
-      pos: structure.pos,
-      range: 1
-    }, {
-      maxRooms: 1
+  if (spawn) {
+    if (this.room === spawn.room) {
+      this.moveToMy(spawn.pos);
+    } else {
+      this.moveTo(spawn);
     }
-  );
-
-  if (config.visualizer.enabled && config.visualizer.showPathSearches) {
-    visualizer.showSearch(search);
+    this.say('recycle');
+    spawn.recycleCreep(this);
   }
-
-  let pos = search.path[0];
-  let returnCode = this.move(this.pos.getDirectionTo(pos));
-
-  if (returnCode === ERR_NO_PATH) {
-    this.moveRandom();
-    //    delete this.memory.routing.targetId;
-    return true;
-  }
-  if (returnCode != OK && returnCode != ERR_TIRED) {
-    //this.log('move returnCode: ' + returnCode);
-  }
-
-  returnCode = this.dismantle(structure);
-  if (returnCode === OK) {
-    this.setNextSpawn();
-    this.spawnCarry();
-  }
+  return true;
 };
 
 Creep.prototype.cleanController = function() {
@@ -54,7 +30,7 @@ Creep.prototype.cleanController = function() {
       maxRooms: 1
     }
   );
-  if (config.visualizer.enabled && config.visualizer.showPathSearches) {
+  if (config.advanced.visualizer.enabled && config.advanced.visualizer.showPathSearches) {
     visualizer.showSearch(search);
   }
   for (let pos of search.path) {

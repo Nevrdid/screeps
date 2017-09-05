@@ -47,7 +47,7 @@ Creep.prototype.moveRandomWithin = function(goal, dist = 3) {
 };
 
 Creep.prototype.moveCreep = function(position, direction) {
-  if (position.x <= 0 || position.x >= 49 || position.y <= 0 || position.y >= 49) {
+  if (!position || position.x <= 0 || position.x >= 49 || position.y <= 0 || position.y >= 49) {
     return false;
   }
 
@@ -66,8 +66,23 @@ Creep.prototype.moveCreep = function(position, direction) {
       creeps[0].move(direction);
       return;
     }
-    if (this.memory.role === 'upgrader' &&
+
+    if (creeps[0].memory.role === 'planer') {
+      creeps[0].move(direction);
+      return;
+    }
+
+    if (creeps[0].memory.role === 'sourcer' &&
+    this.memory.role === 'reserver') {
+      creeps[0].move(direction);
+      creeps[0].memory.routing.reached = false;
+      creeps[0].memory.routing.pathPos--;
+      return;
+    }
+
+    if ((this.memory.role === 'upgrader' || this.memory.role === 'planer') &&
       creeps[0].memory.role === 'storagefiller') {
+        creeps[0].memory.routing.reached = false;
       creeps[0].move(direction);
       return;
     }

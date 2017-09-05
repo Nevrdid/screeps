@@ -57,7 +57,3 @@ roles.squadsiege.preMove = function(creep, directions) {
 roles.squadsiege.action = function(creep) {
   creep.siege();
 };
-
-roles.squadsiege.execute = function(creep) {
-  creep.log('Execute!!!');
-};

@@ -5,7 +5,7 @@ Room.prototype.initSetController = function() {
     let costMatrix = this.getMemoryCostMatrix();
     let upgraderPos = this.controller.pos.getBestNearPosition();
     this.memory.position.creep[this.controller.id] = upgraderPos;
-    costMatrix.set(upgraderPos.x, upgraderPos.y, config.layout.creepAvoid);
+    costMatrix.set(upgraderPos.x, upgraderPos.y, config.basic.room.layout.creepAvoid);
     this.setMemoryCostMatrix(costMatrix);
   }
 };
@@ -20,7 +20,7 @@ Room.prototype.initSetSources = function() {
     if (sourcer) {
       let link = sourcer.getFirstNearPosition();
       this.memory.position.structure.link.push(link);
-      costMatrix.set(link.x, link.y, config.layout.structureAvoid);
+      costMatrix.set(link.x, link.y, config.basic.room.layout.structureAvoid);
       this.setMemoryCostMatrix(costMatrix);
     }
   }
@@ -33,7 +33,7 @@ Room.prototype.initSetMinerals = function() {
     let extractor = mineral.pos.getFirstNearPosition();
     this.memory.position.creep[mineral.id] = extractor;
     this.memory.position.structure.extractor.push(mineral.pos);
-    costMatrix.set(extractor.x, extractor.y, config.layout.creepAvoid);
+    costMatrix.set(extractor.x, extractor.y, config.basic.room.layout.creepAvoid);
     this.setMemoryCostMatrix(costMatrix);
   }
 };
@@ -43,7 +43,7 @@ Room.prototype.initSetStorageAndPathStart = function() {
   let storagePos = this.memory.position.creep[this.controller.id].getBestNearPosition();
   this.memory.position.structure.storage.push(storagePos);
   // TODO should also be done for the other structures
-  costMatrix.set(storagePos.x, storagePos.y, config.layout.structureAvoid);
+  costMatrix.set(storagePos.x, storagePos.y, config.basic.room.layout.structureAvoid);
   this.setMemoryCostMatrix(costMatrix);
 
   this.memory.position.creep.pathStart = storagePos.getFirstNearPosition();
@@ -57,7 +57,7 @@ Room.prototype.initSetStorageAndPathStart = function() {
     if (this.memory.position.creep[this.controller.id].isEqualTo(pos.x, pos.y)) {
       continue;
     }
-    costMatrix.set(pos.x, pos.y, config.layout.pathAvoid);
+    costMatrix.set(pos.x, pos.y, config.basic.room.layout.pathAvoid);
   }
   this.setMemoryCostMatrix(costMatrix);
   return {
@@ -73,29 +73,29 @@ Room.prototype.setFillerArea = function(storagePos, route) {
   this.log('Testing fillerPos' + JSON.stringify(fillerPos));
   this.deleteMemoryPath('pathStart-filler');
   this.memory.position.creep.filler = fillerPos;
-  costMatrix.set(fillerPos.x, fillerPos.y, config.layout.creepAvoid);
+  costMatrix.set(fillerPos.x, fillerPos.y, config.basic.room.layout.creepAvoid);
   this.setMemoryCostMatrix(costMatrix);
   let pathFiller = this.getPath(route, 0, 'pathStart', 'filler', true);
   for (let pos of pathFiller) {
-    this.increaseCostMatrixValue(costMatrix, pos, config.layout.pathAvoid);
+    this.increaseCostMatrixValue(costMatrix, pos, config.basic.room.layout.pathAvoid);
   }
   this.setMemoryCostMatrix(costMatrix);
   let linkStoragePosIterator = fillerPos.findNearPosition();
   for (let linkStoragePos of linkStoragePosIterator) {
     this.memory.position.structure.link.unshift(linkStoragePos);
-    costMatrix.set(linkStoragePos.x, linkStoragePos.y, config.layout.structureAvoid);
+    costMatrix.set(linkStoragePos.x, linkStoragePos.y, config.basic.room.layout.structureAvoid);
     this.setMemoryCostMatrix(costMatrix);
 
     let powerSpawnPosIterator = fillerPos.findNearPosition();
     for (let powerSpawnPos of powerSpawnPosIterator) {
       this.memory.position.structure.powerSpawn.push(powerSpawnPos);
-      costMatrix.set(powerSpawnPos.x, powerSpawnPos.y, config.layout.structureAvoid);
+      costMatrix.set(powerSpawnPos.x, powerSpawnPos.y, config.basic.room.layout.structureAvoid);
       this.setMemoryCostMatrix(costMatrix);
 
       let towerPosIterator = fillerPos.findNearPosition();
       for (let towerPos of towerPosIterator) {
         this.memory.position.structure.tower.push(towerPos);
-        costMatrix.set(towerPos.x, towerPos.y, config.layout.structureAvoid);
+        costMatrix.set(towerPos.x, towerPos.y, config.basic.room.layout.structureAvoid);
         this.setMemoryCostMatrix(costMatrix);
         return;
       }
@@ -149,10 +149,10 @@ Room.prototype.updatePosition = function() {
           continue;
         }
 
-        costMatrix.set(pos.x, pos.y, config.layout.pathAvoid);
+        costMatrix.set(pos.x, pos.y, config.basic.room.layout.pathAvoid);
       }
       let sourcer = this.memory.position.creep[source.id];
-      costMatrix.set(sourcer.x, sourcer.y, config.layout.creepAvoid);
+      costMatrix.set(sourcer.x, sourcer.y, config.basic.room.layout.creepAvoid);
       this.setMemoryCostMatrix(costMatrix);
     }
     this.setFillerArea(startPos.storagePos, startPos.route);
@@ -190,16 +190,16 @@ Room.prototype.setTowerFillerIterate = function(roomName, offsetDirection) {
     }
 
     if (!linkSet) {
-      this.setPosition('link', pos, config.layout.structureAvoid);
+      this.setPosition('link', pos, config.basic.room.layout.structureAvoid);
       linkSet = true;
       continue;
     }
     if (!towerFillerSet) {
-      this.setPosition('towerfiller', pos, config.layout.creepAvoid, 'creep');
+      this.setPosition('towerfiller', pos, config.basic.room.layout.creepAvoid, 'creep');
       towerFillerSet = true;
       continue;
     }
-    this.setPosition('tower', pos, config.layout.structureAvoid);
+    this.setPosition('tower', pos, config.basic.room.layout.structureAvoid);
     positionsFound = true;
     break;
   }
@@ -227,11 +227,11 @@ Room.prototype.setTowerFiller = function() {
 
 Room.prototype.checkLabStructures = function(structurePos, pathPos) {
   if (this.memory.position.structure.lab.length < CONTROLLER_STRUCTURES.lab[8]) {
-    this.setPosition('lab', structurePos, config.layout.structureAvoid);
+    this.setPosition('lab', structurePos, config.basic.room.layout.structureAvoid);
     return true;
   }
   if (this.memory.position.structure.terminal.length < CONTROLLER_STRUCTURES.terminal[8]) {
-    this.setPosition('terminal', structurePos, config.layout.structureAvoid);
+    this.setPosition('terminal', structurePos, config.basic.room.layout.structureAvoid);
     this.memory.position.pathEnd = [pathPos];
     return true;
   }
@@ -284,7 +284,7 @@ Room.prototype.checkPositions = function() {
 };
 
 Room.prototype.setExtensionPos = function(structurePos, pathI) {
-  this.setPosition('extension', structurePos, config.layout.structureAvoid);
+  this.setPosition('extension', structurePos, config.basic.room.layout.structureAvoid);
   if (!this.memory.position.pathEndLevel) {
     this.memory.position.pathEndLevel = [0];
   }
@@ -300,7 +300,7 @@ Room.prototype.areEnergyStructuresPlaced = function() {
 Room.prototype.setPositionAux = function(structurePos) {
   for (let type of [STRUCTURE_TOWER, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_LINK]) {
     if (this.memory.position.structure[type].length < CONTROLLER_STRUCTURES[type][8]) {
-      this.setPosition(type, structurePos, config.layout.structureAvoid);
+      this.setPosition(type, structurePos, config.basic.room.layout.structureAvoid);
       return true;
     }
   }
@@ -316,7 +316,7 @@ Room.prototype.setStructuresCheck = function(pathI) {
 
 Room.prototype.setStructuresIteratePos = function(structurePos, pathI, path) {
   if (structurePos.setSpawn(path, pathI)) {
-    this.setPosition('spawn', structurePos, config.layout.structureAvoid);
+    this.setPosition('spawn', structurePos, config.basic.room.layout.structureAvoid);
     return true;
   }
   if (structurePos.setExtension()) {
@@ -482,5 +482,5 @@ Room.prototype.setup = function() {
   }
 
   this.setMemoryPath('pathStart-harvester', path.slice(0, pathI + 1), true);
-  this.memory.position.version = config.layout.version;
+  this.memory.position.version = config.basic.room.layout.version;
 };

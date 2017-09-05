@@ -17,22 +17,42 @@ roles.sourcer.settings = {
   param: ['energyCapacityAvailable'],
   prefixString: {
     300: 'MW',
-    600: 'MWC'
+    800: 'MWC'
   },
   layoutString: {
-    300: 'W',
-    650: 'MW'
+    300: 'MW'
   },
   amount: {
-    300: [1],
-    350: [2],
-    450: [3],
-    550: [4],
-    650: [1, 4],
-    700: [2, 4]
+    300: [1,1],
+    450: [2,2],
+    600: [3,3],
+    750: [4,4],
   },
   maxLayoutAmount: {
     300: 1
+  }
+};
+
+roles.sourcer.updateSettings = function(room, creep) {
+  if(room.name === creep.routing.targetRoom) {
+    return {
+      prefixString: {
+        300: 'MW',
+        600: 'MWC'
+      },
+      layoutString: {
+        300: 'W',
+        650: 'MW'
+      },
+      amount: {
+        300: [1],
+        350: [2],
+        450: [3],
+        550: [4],
+        650: [1, 4],
+        700: [2, 4]
+      }
+    }
   }
 };
 
@@ -59,19 +79,10 @@ roles.sourcer.preMove = function(creep, directions) {
   }
 
   if (!creep.room.controller) {
-    var target = creep.findClosestSourceKeeper();
-    if (target !== null) {
-      let range = creep.pos.getRangeTo(target);
-      if (range > 6) {
-        creep.memory.routing.reverse = false;
-      }
-      if (range < 6) {
-        creep.memory.routing.reverse = true;
-      }
-    }
+    creep.fleeFromSk(6);
   }
 
-  // TODO Check if this is working
+  // TODO Check if creep is working
   if (directions) {
     let pos = creep.pos.getAdjacentPosition(directions.direction);
     creep.moveCreep(pos, (directions.direction + 3) % 8 + 1);
@@ -111,23 +122,44 @@ roles.sourcer.died = function(name, memory) {
 roles.sourcer.action = function(creep) {
   // TODO check source keeper structure for ticksToSpawn
   if (!creep.room.controller) {
-    var target = creep.findClosestSourceKeeper();
-    if (target !== null) {
-      let range = creep.pos.getRangeTo(target);
-      if (range < 5) {
-        delete creep.memory.routing.reached;
-        creep.memory.routing.reverse = true;
+    creep.fleeFromSk(5);
+  }
+
+  creep.setNextSpawn();
+  creep.spawnReplacement();
+  let room = Game.rooms[creep.room.name];
+  let targetId = creep.memory.routing.targetId;
+  var source = Game.getObjectById(targetId);
+
+  let target = source;
+  let returnCode = creep.harvest(source);
+  if (returnCode != OK && returnCode != ERR_NOT_ENOUGH_RESOURCES) {
+    creep.log('harvest: ' + returnCode);
+    return false;
+  }
+
+  creep.buildContainer();
+
+  if (!creep.room.controller || !creep.room.controller.my || creep.room.controller.level >= 2) {
+    creep.spawnCarry();
+  }
+
+  if (creep.inBase()) {
+    if (!creep.memory.link) {
+      const links = creep.pos.findInRangePropertyFilter(FIND_MY_STRUCTURES, 1, 'structureType', [STRUCTURE_LINK]);
+      if (links.length > 0) {
+        creep.memory.link = links[0].id;
+      }
+    }
+
+    const link = Game.getObjectById(creep.memory.link);
+    if (link) {
+      creep.transfer(link, RESOURCE_ENERGY);
+      const resources = creep.pos.findInRangePropertyFilter(FIND_DROPPED_RESOURCES, 1, 'resourceType', [RESOURCE_ENERGY]);
+      if (resources.length > 0) {
+        creep.pickup(resources);
       }
     }
   }
-
-  creep.handleSourcer();
   return true;
-};
-
-roles.sourcer.execute = function(creep) {
-  creep.log('Execute!!!');
-  creep.memory.routing.targetReached = true;
-  creep.handleSourcer();
-  //  throw new Error();
 };

@@ -29,14 +29,14 @@ roles.upgrader.updateSettings = function(room, creep) {
   // Example with upgraderStorageFactor 2:
   // 6453 energy in storage are 2 workParts
   // 3000 energy will be put in the controller
-  let workParts = Math.floor((room.storage.store.energy + 1) / (CREEP_LIFE_TIME * config.room.upgraderStorageFactor));
+  let workParts = Math.floor((room.storage.store.energy + 1) / (CREEP_LIFE_TIME * config.basic.creeps.upgrader.storageFactor));
   workParts = Math.min(workParts, 47);
   if (room.controller.level === 8) {
     workParts = Math.min(workParts, 15);
   }
   const maxLayoutAmount = Math.max(0, workParts - 1);
-  if (config.debug.upgrader) {
-    room.log(`upgrader updateSettings - storage.energy: ${room.storage.store.energy} upgraderStorageFactor: ${config.room.upgraderStorageFactor} workParts: ${workParts} maxLayoutAmount: ${maxLayoutAmount}`);
+  if (config.advanced.debug.upgrader) {
+    room.log(`upgrader updateSettings - storage.energy: ${room.storage.store.energy} upgraderStorageFactor: ${config.basic.creeps.upgrader.storageFactor} workParts: ${workParts} maxLayoutAmount: ${maxLayoutAmount}`);
   }
   return {
     maxLayoutAmount: maxLayoutAmount
@@ -50,9 +50,6 @@ roles.upgrader.killPrevious = true;
 
 roles.upgrader.boostActions = ['upgradeController'];
 
-roles.upgrader.work = function(creep) {
-  return creep.handleUpgrader();
-};
 
 roles.upgrader.action = function(creep) {
   creep.mySignController();
@@ -64,9 +61,22 @@ roles.upgrader.action = function(creep) {
   if (creep.memory.routing.reached && creep.memory.routing.pathPos === 0) {
     creep.memory.routing.reached = false;
   }
-  return creep.handleUpgrader();
-};
+  creep.sayIdiotList();
+  creep.spawnReplacement(1);
+  if (creep.room.memory.attackTimer > 50 && creep.room.controller.level > 6) {
+    if (creep.room.controller.ticksToDowngrade > 10000) {
+      return true;
+    }
+  }
 
-roles.upgrader.execute = function(creep) {
-  creep.log('Execute!!!');
+  var returnCode = creep.upgradeController(creep.room.controller);
+  if (returnCode === OK) {
+    creep.upgraderUpdateStats();
+  }
+
+  returnCode = creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
+  if (returnCode === ERR_FULL || returnCode === OK) {
+    return true;
+  }
+  return true;
 };

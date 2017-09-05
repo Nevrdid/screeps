@@ -33,11 +33,11 @@ Room.prototype.getCostMatrixCallback = function(end, excludeStructures, oneRoom,
     if (excludeStructures) {
       // TODO excluding structures, for the case where the spawn is in the wrong spot (I guess this can be handled better)
       let structures = room.findPropertyFilter(FIND_STRUCTURES, 'structureType', [STRUCTURE_RAMPART, STRUCTURE_ROAD, STRUCTURE_CONTAINER], true);
-      this.setCostMatrixStructures(costMatrix, structures, config.layout.structureAvoid);
+      this.setCostMatrixStructures(costMatrix, structures, config.basic.room.layout.structureAvoid);
 
       // TODO repairer got stuck at walls, why?
       let constructionSites = room.findPropertyFilter(FIND_CONSTRUCTION_SITES, 'structureType', [STRUCTURE_RAMPART, STRUCTURE_ROAD, STRUCTURE_CONTAINER], true);
-      this.setCostMatrixStructures(costMatrix, constructionSites, config.layout.structureAvoid);
+      this.setCostMatrixStructures(costMatrix, constructionSites, config.basic.room.layout.structureAvoid);
     }
 
     if (allowExits) {
@@ -59,7 +59,7 @@ Room.prototype.getCostMatrixCallback = function(end, excludeStructures, oneRoom,
 Room.prototype.setCostMatrixPath = function(costMatrix, path) {
   for (let i = 0; i < path.length - 1; i++) {
     let pos = path[i];
-    costMatrix.set(pos.x, pos.y, config.layout.pathAvoid);
+    costMatrix.set(pos.x, pos.y, config.basic.room.layout.pathAvoid);
   }
   this.setCostMatrixAvoidSources(costMatrix);
 };
@@ -72,7 +72,7 @@ Room.prototype.setCostMatrixAvoidSources = function(costMatrix) {
   const sources = this.find(FIND_SOURCES);
   for (let source of sources) {
     for (let pos of source.pos.getAllPositionsInRange(2)) {
-      this.increaseCostMatrixValue(costMatrix, pos, config.layout.sourceAvoid);
+      this.increaseCostMatrixValue(costMatrix, pos, config.basic.room.layout.sourceAvoid);
     }
   }
   return sources;
@@ -87,7 +87,7 @@ Room.prototype.getCostMatrix = function() {
       if (roomPos.checkForWall()) {
         costMatrix.set(roomPos.x, roomPos.y, 0xFF);
         for (let pos of roomPos.getAllPositionsInRange(1)) {
-          this.increaseCostMatrixValue(costMatrix, pos, config.layout.wallAvoid);
+          this.increaseCostMatrixValue(costMatrix, pos, config.basic.room.layout.wallAvoid);
         }
       }
     }
@@ -100,14 +100,14 @@ Room.prototype.getCostMatrix = function() {
     const minerals = this.find(FIND_MINERALS);
     const sources = this.find(FIND_SOURCES);
     for (let obj of [...lairs, ...sources, ...minerals]) {
-      for (let pos of obj.pos.getAllPositionsInRange(config.layout.skLairAvoidRadius)) {
-        this.increaseCostMatrixValue(costMatrix, pos, config.layout.skLairAvoid);
+      for (let pos of obj.pos.getAllPositionsInRange(config.basic.room.layout.skLairAvoidRadius)) {
+        this.increaseCostMatrixValue(costMatrix, pos, config.basic.room.layout.skLairAvoid);
       }
     }
   }
 
   for (let i = 0; i < 50; i++) {
-    let value = config.layout.borderAvoid;
+    let value = config.basic.room.layout.borderAvoid;
     costMatrix.set(i, 0, Math.max(costMatrix.get(i, 0), 0xFF));
     costMatrix.set(i, 49, Math.max(costMatrix.get(i, 49), 0xFF));
     costMatrix.set(0, i, Math.max(costMatrix.get(0, i), 0xFF));

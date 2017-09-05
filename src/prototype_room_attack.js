@@ -46,7 +46,7 @@ Room.prototype.attack42 = function(roomName, spawn) {
 Room.prototype.attackRoom = function() {
   function attack0(room) {
     room.log('Queuing level 0 attack');
-    if (config.autoattack.notify) {
+    if (config.basic.creeps.autoattack.notify) {
       Game.notify(Game.time + ' ' + room.name + ' Queuing autoattacker');
     }
 
@@ -56,19 +56,14 @@ Room.prototype.attackRoom = function() {
 
     let roomsMy = _.sortBy(Memory.myRooms, sortByDistance);
 
-    Game.rooms[roomsMy[0]].memory.queue.push({
-      role: 'autoattackmelee',
-      routing: {
-        targetRoom: room.name
-      }
-    });
+    Game.rooms[roomsMy[0]].checkRoleToSpawn('autoattackmelee', 3, undefined, room.name, undefined, roomsMy[0]);
 
     return true;
   }
 
   function attack1(room) {}
 
-  if (config.autoattack.disabled) {
+  if (config.basic.creeps.autoattack.disabled) {
     return true;
   }
   var name;

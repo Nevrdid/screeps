@@ -1,15 +1,23 @@
 'use strict';
 
+Creep.prototype.execute = function(methods) {
+  for (let method of methods) {
+    if (this[method] && this[method]()) {
+      return true;
+    }
+  }
+};
+
 function getOppositeDirection(direction) {
   console.log('getOppositeDirection typeof: ' + typeof direction);
   return ((direction + 3) % 8) + 1;
 }
 
 Creep.prototype.mySignController = function() {
-  if (config.info.signController && this.room.exectueEveryTicks(config.info.resignInterval)) {
-    let text = config.info.signText;
-    if (config.quests.enabled && this.memory.role === 'reserver') {
-      if (Math.random() < config.quests.signControllerPercentage) {
+  if (config.advanced.info.signController && this.room.executeEveryTicks(config.advanced.info.resignInterval)) {
+    let text = config.advanced.info.signText;
+    if (config.basic.quests.enabled && this.memory.role === 'reserver') {
+      if (Math.random() < config.basic.quests.signControllerPercentage) {
         let quest = {
           id: Math.random(),
           origin: this.memory.base,
@@ -36,12 +44,12 @@ Creep.prototype.moveToMy = function(target, range) {
     }, {
       roomCallback: this.room.getCostMatrixCallback(target, true, this.pos.roomName === (target.pos || target).roomName),
       maxRooms: 0,
-      swampCost: config.layout.swampCost,
-      plainCost: config.layout.plainCost
+      swampCost: config.basic.room.layout.swampCost,
+      plainCost: config.basic.room.layout.plainCost
     }
   );
 
-  if (config.visualizer.enabled && config.visualizer.showPathSearches) {
+  if (config.advanced.visualizer.enabled && config.advanced.visualizer.showPathSearches) {
     visualizer.showSearch(search);
   }
 
@@ -59,13 +67,11 @@ Creep.prototype.inBase = function() {
 };
 
 Creep.prototype.handle = function() {
-  if (this.spawning) {
-    return;
-  }
+  if (this.spawning) return false;
 
   if (this.memory.recycle) {
-    Creep.recycleCreep(this);
-    return;
+    this.recycleCreep();
+    return false;
   }
 
   let role = this.memory.role;
@@ -75,79 +81,34 @@ Creep.prototype.handle = function() {
     return;
   }
 
-  try {
-    let unit = roles[role];
-    if (unit.stayInRoom) {
-      if (this.stayInRoom()) {
-        return;
-      }
-    }
+  let unit = roles[role];
+  if (unit.stayInRoom && this.stayInRoom()
+  ) return true;
 
-    if (!this.memory.boosted) {
-      if (this.boost()) {
-        return true;
-      }
-    }
+  if (!this.memory.boosted && this.boost()
+  ) return true;
 
-    if (unit.action) {
-      if (this.memory.routing && this.memory.routing.reached) {
-        if (this.inBase() || !Room.isRoomUnderAttack(this.room.name)) {
-          // TODO maybe rename action to ... something better
-          //      this.say('Action');
-          return unit.action(this);
-        }
-      }
-
-      if (this.followPath(unit.action)) {
-        return true;
-      }
-    }
-
-    //    if (this.memory.role != 'defendranged' && this.memory.role != 'repairer' && this.memory.role != 'scout' && this.memory.role != 'scoutnextroom' && this.memory.role != 'nextroomer' && this.memory.role != 'upgrader') {
-    //      this.log('After followPath');
-    //    }
-
-    if (unit.execute) {
-      unit.execute(this);
-      // TODO this is very old, can be removed?
-    } else {
-      this.log('Old module execution !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1');
-      unit(this);
-    }
-  } catch (err) {
-    let message = 'Executing creep role failed: ' +
-      this.room.name + ' ' +
-      this.name + ' ' +
-      this.id + ' ' +
-      JSON.stringify(this.pos) + ' ' +
-      err;
-    if (err !== null) {
-      message += '\n' + err.stack;
-    }
-
-    this.log(message);
-    Game.notify(message, 30);
-  } finally {
-    if (this.memory.last === undefined) {
-      this.memory.last = {};
-    }
-    let last = this.memory.last;
-    this.memory.last = {
-      pos1: this.pos,
-      pos2: last.pos1,
-      pos3: last.pos2
-    };
+  if (this.memory.last === undefined) {
+    this.memory.last = {};
   }
+  let last = this.memory.last;
+  this.memory.last = {
+    pos1: this.pos,
+    pos2: last.pos1,
+    pos3: last.pos2
+  };
+
+  if (this.memory.routing && this.memory.routing.reached
+    && (this.inBase() || !Room.isRoomUnderAttack(this.room.name))
+  ) return unit.action(this);
+
+  this.followPath(unit.action)
 };
 
 Creep.prototype.isStuck = function() {
-  if (!this.memory.last) {
-    return false;
-  }
-  if (!this.memory.last.pos2) {
-    return false;
-  }
-  if (!this.memory.last.pos3) {
+  if (!this.memory.last ||
+    !this.memory.last.pos2 ||
+    !this.memory.last.pos3) {
     return false;
   }
   for (let pos = 1; pos < 4; pos++) {
@@ -250,8 +211,8 @@ Creep.prototype.buildRoad = function() {
 
   constructionSites = this.room.findPropertyFilter(FIND_MY_CONSTRUCTION_SITES, 'structureType', [STRUCTURE_ROAD]);
   if (
-    constructionSites.length <= config.buildRoad.maxConstructionSitesRoom &&
-    Object.keys(Game.constructionSites).length < config.buildRoad.maxConstructionSitesTotal
+    constructionSites.length <= config.basic.structures.constructionSite.maxRoom &&
+    Object.keys(Game.constructionSites).length < config.basic.structures.constructionSite.maxTotal
     //&& this.pos.inPath()
   ) {
     let returnCode = this.pos.createConstructionSite(STRUCTURE_ROAD);
@@ -275,8 +236,8 @@ Creep.prototype.moveForce = function(target, forward) {
     nextPosition = this.memory.path[this.room.name][(+positionId - 1)];
   }
 
-  var lastPos = this.memory.lastPosition;
-  if (this.memory.lastPosition &&
+  var lastPos = this.memory.last && this.memory.last.pos1;
+  if (lastPos &&
     this.pos.isEqualTo(new RoomPosition(
       lastPos.x,
       lastPos.y,
@@ -298,7 +259,7 @@ Creep.prototype.moveForce = function(target, forward) {
       let position = this.memory.path[this.room.name][(+positionId)];
       this.move(getOppositeDirection(position.direction));
     }
-    this.memory.lastPosition = this.pos;
+    this.memory.last.pos1 = this.pos;
   }
   return;
 };
@@ -388,7 +349,7 @@ Creep.prototype.spawnReplacement = function(maxOfRole) {
 
 Creep.prototype.setNextSpawn = function() {
   if (!this.memory.nextSpawn) {
-    this.memory.nextSpawn = Game.time - this.memory.born - config.creep.renewOffset;
+    this.memory.nextSpawn = Game.time - this.memory.born - config.basic.creeps.renewOffset;
     //    this.killPrevious();
 
     if (this.ticksToLive < this.memory.nextSpawn) {

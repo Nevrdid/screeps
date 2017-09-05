@@ -14,7 +14,7 @@ Room.prototype.getNextReaction = function() {
         continue;
       }
       let result = REACTIONS[mineralFirst][mineralSecond];
-      if (this.terminal.store[result] > config.mineral.minAmount) {
+      if (this.terminal.store[result] > config.basic.mineral.minAmount) {
         continue;
       }
       //this.log('Could build: ' + mineralFirst + ' ' + mineralSecond + ' ' + result);
@@ -96,7 +96,7 @@ Room.prototype.reactions = function() {
     //    this.log('Setting reaction: ' + JSON.stringify(this.memory.reaction));
   }
 
-  if (this.terminal.store[this.memory.reaction.result.result] > config.mineral.minAmount) {
+  if (this.terminal.store[this.memory.reaction.result.result] > config.basic.mineral.minAmount) {
     this.log('Done with reaction:' + this.memory.reaction.result.result);
     delete this.memory.reaction;
   }
@@ -106,7 +106,7 @@ Room.prototype.orderMinerals = function() {
   let minerals = this.find(FIND_MINERALS);
   let resource = minerals[0].mineralType;
 
-  if (this.exectueEveryTicks(20)) {
+  if (this.executeEveryTicks(20)) {
     let baseMinerals = [
       RESOURCE_HYDROGEN,
       RESOURCE_OXYGEN,
@@ -140,7 +140,7 @@ Room.prototype.orderMinerals = function() {
             continue;
           }
           let mineralType = minerals[0].mineralType;
-          if (!roomOther.terminal || roomOther.terminal[minerals[0].mineralType] < config.mineral.minAmount) {
+          if (!roomOther.terminal || roomOther.terminal[minerals[0].mineralType] < config.basic.mineral.minAmount) {
             continue;
           }
           if (mineralType === mineral) {

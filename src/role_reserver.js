@@ -34,20 +34,33 @@ roles.reserver.updateSettings = function(room, creep) {
 roles.reserver.action = function(creep) {
   creep.mySignController();
   if (!creep.memory.routing.targetId) {
-    // TODO check when this happens and fix it
+    // TODO check when creep happens and fix it
     creep.log('creep_reserver.action No targetId !!!!!!!!!!!' + JSON.stringify(creep.memory));
     if (creep.room.name === creep.memory.routing.targetRoom) {
       creep.memory.routing.targetId = creep.room.controller.id;
     }
   }
 
-  // TODO this should be enabled, because the reserver should flee without being attacked
+  // TODO creep should be enabled, because the reserver should flee without being attacked
   creep.notifyWhenAttacked(false);
 
-  creep.handleReserver();
-  return true;
-};
+  if (creep.room.name !== creep.memory.routing.targetRoom) {
+    creep.memory.routing.reached = false;
+    return false;
+  }
+  creep.reserverSetLevel();
+  creep.spawnReplacement(1);
 
-roles.reserver.execute = function(creep) {
-  creep.log('Execute!!!');
+  creep.callCleaner();
+
+  if (creep.room.executeEveryTicks(100) && creep.room.controller.reservation && creep.room.controller.reservation.username === Memory.username) {
+    creep.checkSourcer();
+  }
+
+  if (config.basic.room.external.defend) {
+    creep.callDefender(1);
+  }
+
+  creep.interactWithController();
+  return true;
 };

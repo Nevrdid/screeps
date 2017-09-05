@@ -42,7 +42,7 @@ roles.structurer.preMove = function(creep, directions) {
     }
   }
 
-  // Routing would end within the wall - this is the fix for that
+  // Routing would end within the wall - creep is the fix for that
   if (creep.memory.routing.targetId && creep.room.name === creep.memory.routing.targetRoom) {
     let target = Game.getObjectById(creep.memory.routing.targetId);
     if (target === null) {
@@ -63,14 +63,57 @@ roles.structurer.action = function(creep) {
     creep.dismantle(structure);
   }
 
-  creep.spawnReplacement(1);
-  creep.handleStructurer();
-  return true;
-};
-
-roles.structurer.execute = function(creep) {
-  creep.log('Execute!!!');
+  /**
+  // Was in execute old function :
   if (!creep.memory.routing.targetId) {
     return creep.cleanSetTargetId();
   }
+  **/
+
+  creep.spawnReplacement(1);
+
+  var structure;
+
+  if (!creep.memory.routing.targetId) {
+    return creep.cleanSetTargetId();
+  }
+
+  structure = Game.getObjectById(creep.memory.routing.targetId);
+  if (structure === null) {
+    delete creep.memory.routing.targetId;
+    return;
+  }
+
+  let search = PathFinder.search(
+    creep.pos, {
+      pos: structure.pos,
+      range: 1
+    }, {
+      maxRooms: 1
+    }
+  );
+
+  if (config.advanced.visualizer.enabled && config.advanced.visualizer.showPathSearches) {
+    visualizer.showSearch(search);
+  }
+
+  let pos = search.path[0];
+  let returnCode = creep.move(creep.pos.getDirectionTo(pos));
+
+  if (returnCode === ERR_NO_PATH) {
+    creep.moveRandom();
+    //    delete creep.memory.routing.targetId;
+    return true;
+  }
+  if (returnCode != OK && returnCode != ERR_TIRED) {
+    //creep.log('move returnCode: ' + returnCode);
+  }
+
+  returnCode = creep.dismantle(structure);
+  if (returnCode === OK) {
+    creep.setNextSpawn();
+    creep.spawnCarry();
+  }
+
+  return true;
 };

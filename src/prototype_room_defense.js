@@ -32,7 +32,7 @@ Room.prototype.findAttackCreeps = function(object) {
 };
 
 Room.prototype.handleNukeAttack = function() {
-  if (!this.exectueEveryTicks(config.room.handleNukeAttackInterval)) {
+  if (!this.executeEveryTicks(config.basic.room.my.handleNukeAttackInterval)) {
     return false;
   }
 
@@ -101,7 +101,7 @@ Room.prototype.handleTower = function() {
     return true;
   }
 
-  if (config.tower.healMyCreeps) {
+  if (config.basic.structures.tower.healMyCreeps) {
     const my_creeps = this.find(FIND_MY_CREEPS, {
       filter: function(object) {
         return object.hits < object.hitsMax;
@@ -119,7 +119,7 @@ Room.prototype.handleTower = function() {
     return false;
   }
 
-  if (!config.tower.repairStructures) {
+  if (!config.basic.structures.tower.repairStructures) {
     return true;
   }
 
@@ -136,7 +136,7 @@ Room.prototype.handleTower = function() {
     if (tower.energy === 0) {
       continue;
     }
-    if (!this.exectueEveryTicks(10)) {
+    if (!this.executeEveryTicks(10)) {
       if (tower.energy < tower.energyCapacity / 2 || this.memory.repair_min > 1000000) {
         continue;
       }

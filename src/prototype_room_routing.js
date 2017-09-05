@@ -9,7 +9,7 @@ Room.isRoomUnderAttack = function(roomName) {
     return false;
   }
 
-  if (Game.time - Memory.rooms[roomName].hostile.lastUpdate > config.hostile.remeberInRoom) {
+  if (Game.time - Memory.rooms[roomName].hostile.lastUpdate > config.basic.room.hostile.rememberInRoom) {
     delete Memory.rooms[roomName].hostile;
     let room = Game.rooms[roomName];
     room.log('newmove: isRoomUnderAttack: lastUpdate too old');
@@ -56,7 +56,7 @@ Room.prototype.findRoute = function(from, to) {
 
     if (Memory.rooms[roomName] && Memory.rooms[roomName].state === 'Occupied') {
       //         console.log(`Creep.prototype.getRoute: Do not route through occupied rooms ${roomName}`);
-      if (config.path.allowRoutingThroughFriendRooms && friends.indexOf(Memory.rooms[roomName].player) > -1) {
+      if (config.basic.room.path.allowRoutingThroughFriendRooms && friends.indexOf(Memory.rooms[roomName].player) > -1) {
         console.log('routing through friendly room' + roomName);
         return 1;
       }
@@ -103,8 +103,8 @@ Room.prototype.buildPath = function(route, routePos, from, to) {
     }, {
       roomCallback: this.getCostMatrixCallback(end),
       maxRooms: 1,
-      swampCost: config.layout.swampCost,
-      plainCost: config.layout.plainCost
+      swampCost: config.basic.room.layout.swampCost,
+      plainCost: config.basic.room.layout.plainCost
     }
   );
 

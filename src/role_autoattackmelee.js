@@ -24,7 +24,7 @@ roles.autoattackmelee.preMove = function(creep) {
 };
 
 roles.autoattackmelee.action = function(creep) {
-  if (config.autoattack.notify && !creep.memory.notified) {
+  if (config.basic.creeps.autoattack.notify && !creep.memory.notified) {
     creep.log('Attacking');
     Game.notify(Game.time + ' ' + creep.room.name + ' Attacking');
     creep.memory.notified = true;
@@ -73,7 +73,7 @@ roles.autoattackmelee.action = function(creep) {
       maxRooms: 1
     }
   );
-  if (config.visualizer.enabled && config.visualizer.showPathSearches) {
+  if (config.advanced.visualizer.enabled && config.advanced.visualizer.showPathSearches) {
     visualizer.showSearch(search);
   }
   creep.move(creep.pos.getDirectionTo(search.path[0]));
@@ -85,8 +85,4 @@ roles.autoattackmelee.action = function(creep) {
     let returnCode = creep.attack(structures[0]);
   }
   return true;
-};
-
-roles.autoattackmelee.execute = function(creep) {
-  creep.log('Execute!!!');
 };

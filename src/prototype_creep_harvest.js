@@ -9,58 +9,19 @@ function existInArray(array, item) {
   return false;
 }
 
-Creep.prototype.handleSourcer = function() {
-  this.setNextSpawn();
-  this.spawnReplacement();
-  let room = Game.rooms[this.room.name];
-  let targetId = this.memory.routing.targetId;
-  var source = Game.getObjectById(targetId);
-
-  let target = source;
-  let returnCode = this.harvest(source);
-  if (returnCode != OK && returnCode != ERR_NOT_ENOUGH_RESOURCES) {
-    this.log('harvest: ' + returnCode);
-    return false;
-  }
-
-  this.buildContainer();
-
-  if (!this.room.controller || !this.room.controller.my || this.room.controller.level >= 2) {
-    this.spawnCarry();
-  }
-
-  if (this.inBase()) {
-    if (!this.memory.link) {
-      const links = this.pos.findInRangePropertyFilter(FIND_MY_STRUCTURES, 1, 'structureType', [STRUCTURE_LINK]);
-      if (links.length > 0) {
-        this.memory.link = links[0].id;
-      }
-    }
-
-    const link = Game.getObjectById(this.memory.link);
-    if (link) {
-      this.transfer(link, RESOURCE_ENERGY);
-      const resources = this.pos.findInRangePropertyFilter(FIND_DROPPED_RESOURCES, 1, 'resourceType', [RESOURCE_ENERGY]);
-      if (resources.length > 0) {
-        this.pickup(resources);
-      }
-    }
-  }
-};
-
 Creep.prototype.spawnCarry = function() {
   if (this.memory.wait > 0) {
     this.memory.wait -= 1;
     return false;
   }
 
-  const foundKey = Object.keys(config.carry.sizes).reverse()
-    .find(key => (key <= Game.rooms[this.memory.base].energyCapacityAvailable));
-  let carryCapacity = config.carry.sizes[foundKey][1] * CARRY_CAPACITY;
+  const foundKey = Object.keys(config.basic.creeps.carry.sizes).reverse()
+    .find(key => (key <= Game.rooms[this.memory.base].memory.energyAvailable));
+  let carryCapacity = config.basic.creeps.carry.sizes[foundKey][1] * CARRY_CAPACITY;
 
   const workParts = this.body.filter(part => part.type === WORK).length;
 
-  let waitTime = carryCapacity / (HARVEST_POWER * workParts);
+  let waitTime = Math.floor(1500 * carryCapacity / (this.memory.timeToTravel * (HARVEST_POWER * workParts))) ;
 
   var spawn = {
     role: 'carry',
@@ -92,5 +53,5 @@ Creep.prototype.spawnCarry = function() {
       nearCarries[0].memory.recycle = true;
     }
   }
-  this.memory.wait = Math.max(waitTime, config.carry.minSpawnRate);
+  this.memory.wait = Math.max(waitTime, config.basic.creeps.carry.minSpawnRate);
 };

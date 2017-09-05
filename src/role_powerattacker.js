@@ -65,7 +65,3 @@ roles.powerattacker.action = function(creep) {
   creep.attack(power_bank[0]);
   return true;
 };
-
-roles.powerattacker.execute = function(creep) {
-  creep.log('Execute!!!');
-};

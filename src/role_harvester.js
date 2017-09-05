@@ -29,7 +29,7 @@ roles.harvester.settings = {
   maxLayoutAmount: 6
 };
 roles.harvester.updateSettings = function(room, creep) {
-  if (room.storage && room.storage.my && room.storage.store.energy > config.creep.energyFromStorageThreshold && room.energyAvailable > 350 && !room.memory.misplacedSpawn) {
+  if (room.storage && room.storage.my && room.storage.store.energy > config.basic.creeps.energyFromStorageThreshold && room.energyAvailable > 350 && !room.memory.misplacedSpawn) {
     return {
       prefixString: 'WMC',
       layoutString: 'MC',
@@ -61,7 +61,7 @@ roles.harvester.preMove = function(creep, directions) {
   creep.setNextSpawn();
   creep.spawnReplacement(1);
 
-  if (!creep.room.storage || !creep.room.storage.my || creep.room.memory.misplacedSpawn || (creep.room.storage.store.energy + creep.carry.energy) < config.creep.energyFromStorageThreshold) {
+  if (!creep.room.storage || !creep.room.storage.my || creep.room.memory.misplacedSpawn || (creep.room.storage.store.energy + creep.carry.energy) < config.basic.creeps.energyFromStorageThreshold) {
     creep.harvesterBeforeStorage();
     creep.memory.routing.reached = true;
     return true;
@@ -117,7 +117,7 @@ roles.harvester.action = function(creep) {
     creep.memory.routing.targetId = 'harvester';
   }
 
-  if (!creep.room.storage || !creep.room.storage.my || (creep.room.storage.store.energy + creep.carry.energy) < config.creep.energyFromStorageThreshold) {
+  if (!creep.room.storage || !creep.room.storage.my || (creep.room.storage.store.energy + creep.carry.energy) < config.basic.creeps.energyFromStorageThreshold) {
     creep.harvesterBeforeStorage();
     creep.memory.routing.reached = false;
     return true;
@@ -127,12 +127,4 @@ roles.harvester.action = function(creep) {
   creep.memory.routing.reverse = true;
   delete creep.memory.routing.reached;
   return true;
-};
-
-roles.harvester.execute = function(creep) {
-  creep.log('execute');
-  // TODO Something is broken
-  creep.harvesterBeforeStorage();
-  //   if (true) throw new Error();
-  return false;
 };

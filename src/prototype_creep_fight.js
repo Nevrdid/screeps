@@ -31,6 +31,12 @@ Creep.prototype.fleeFromHostile = function(hostile) {
   this.move(direction);
 };
 
+Creep.prototype.getNextSourceKeeper = function() {
+  const sourceKeeper = this.room.findPropertyFilter(FIND_STRUCTURES, 'structureType', [STRUCTURE_KEEPER_LAIR]);
+  const sourceKeeperNext = _.sortBy(sourceKeeper, object => object.ticksToSpawn);
+  return sourceKeeperNext[0];
+};
+
 Creep.prototype.attackHostile = function(hostile) {
   let range;
   if (this.hits < 0.5 * this.hitsMax || this.pos.getRangeTo(hostile) < 3) {
@@ -109,33 +115,6 @@ Creep.prototype.moveToHostileConstructionSites = function() {
     return true;
   }
   return false;
-};
-
-Creep.prototype.handleDefender = function() {
-  let hostile = this.findClosestEnemy();
-
-  if (this.fightRampart(hostile)) {
-    return true;
-  }
-
-  if (hostile !== null) {
-    return this.attackHostile(hostile);
-  }
-
-  if (this.healMyCreeps()) {
-    return true;
-  }
-
-  if (this.healAllyCreeps()) {
-    return true;
-  }
-
-  if (this.moveToHostileConstructionSites()) {
-    return true;
-  }
-
-  this.moveRandom();
-  return true;
 };
 
 Creep.prototype.findClosestRampart = function() {

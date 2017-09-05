@@ -42,7 +42,7 @@ roles.defendranged.settings = {
 //  return creep.fightRanged(target);
 //};
 
-roles.defendranged.execute = function(creep) {
+roles.defendranged.action = function(creep) {
   creep.memory.countdown = creep.memory.countdown || 100;
 
   let recycleCreep = function(creep) {
@@ -60,7 +60,7 @@ roles.defendranged.execute = function(creep) {
         return true;
       }
     }
-    return Creep.recycleCreep(creep);
+    return this.recycleCreep();
   };
 
   let hostiles = creep.room.getEnemys();

@@ -73,7 +73,3 @@ roles.powertransporter.action = function(creep) {
   getResource();
   return true;
 };
-
-roles.powertransporter.execute = function(creep) {
-  creep.log('Execute!!!');
-};

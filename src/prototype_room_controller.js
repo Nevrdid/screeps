@@ -20,7 +20,7 @@ Room.prototype.buildBase = function() {
     this.memory.controllerLevel['setup_level_' + this.controller.level] = Game.time;
   }
 
-  if (this.controller.level > 2 && this.exectueEveryTicks(this.memory.controllerLevel.checkPathInterval)) {
+  if (this.controller.level > 2 && this.executeEveryTicks(this.memory.controllerLevel.checkPathInterval)) {
     if (this.checkPath(this)) {
       resetCounters(this);
     } else {
@@ -31,7 +31,7 @@ Room.prototype.buildBase = function() {
   if (!this.memory.controllerLevel.checkWrongStructureInterval) {
     this.memory.controllerLevel.checkWrongStructureInterval = 1;
   }
-  if (this.memory.walls && this.memory.walls.finished && this.exectueEveryTicks(this.memory.controllerLevel.checkWrongStructureInterval)) {
+  if (this.memory.walls && this.memory.walls.finished && this.executeEveryTicks(this.memory.controllerLevel.checkWrongStructureInterval)) {
     if (this.checkWrongStructure(this)) {
       resetCounters(this);
     } else {
@@ -53,7 +53,7 @@ Room.prototype.buildBase = function() {
   if (!this.memory.controllerLevel.buildStructuresInterval) {
     this.memory.controllerLevel.buildStructuresInterval = 1;
   }
-  if (this.exectueEveryTicks(this.memory.controllerLevel.buildStructuresInterval)) {
+  if (this.executeEveryTicks(this.memory.controllerLevel.buildStructuresInterval)) {
     executeTask('buildStructures');
   }
 
@@ -64,10 +64,10 @@ Room.prototype.buildBase = function() {
     this.memory.controllerLevel.buildBlockersInterval = 1;
   }
   if (this.memory.controllerLevel.buildStructuresInterval > 1) {
-    if (this.exectueEveryTicks(this.memory.controllerLevel.checkBlockersInterval)) {
+    if (this.executeEveryTicks(this.memory.controllerLevel.checkBlockersInterval)) {
       executeTask('checkBlockers');
     }
-    if (this.exectueEveryTicks(this.memory.controllerLevel.buildBlockersInterval)) {
+    if (this.executeEveryTicks(this.memory.controllerLevel.buildBlockersInterval)) {
       if (this.controller.level >= 2) {
         executeTask('buildBlockers');
       }
@@ -75,7 +75,7 @@ Room.prototype.buildBase = function() {
   }
 
   // version: this.memory.position.version is maybe not the best idea
-  if (!this.memory.position || this.memory.position.version != config.layout.version) {
+  if (!this.memory.position || this.memory.position.version != config.basic.room.layout.version) {
     this.setup();
   }
 };

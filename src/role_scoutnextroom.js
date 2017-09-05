@@ -14,7 +14,7 @@ roles.scoutnextroom.settings = {
   maxLayoutAmount: 1
 };
 
-roles.scoutnextroom.execute = function(creep) {
+roles.scoutnextroom.action = function(creep) {
   creep.notifyWhenAttacked(false);
   if (creep.memory.claimRoom) {
     creep.moveTo(creep.room.controller);
@@ -72,7 +72,7 @@ roles.scoutnextroom.execute = function(creep) {
 
       for (let roomName of Memory.myRooms) {
         let distance = Game.map.getRoomLinearDistance(creep.room.name, roomName);
-        if (distance < config.nextRoom.minNewRoomDistance) {
+        if (distance < config.basic.room.my.minNewRoomDistance) {
           creep.log('To close to: ' + roomName + ' ' + distance);
           return false;
         }
@@ -185,7 +185,7 @@ roles.scoutnextroom.execute = function(creep) {
     }
   );
 
-  if (config.visualizer.enabled && config.visualizer.showPathSearches) {
+  if (config.advanced.visualizer.enabled && config.advanced.visualizer.showPathSearches) {
     visualizer.showSearch(search);
   }
 

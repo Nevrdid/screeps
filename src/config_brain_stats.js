@@ -2,7 +2,7 @@
 
 brain.stats.init = function() {
   let userName = Memory.username;
-  if (!config.stats.enabled || !userName) { return false; }
+  if (!config.advanced.stats.enabled || !userName) { return false; }
   Memory.stats = {
     [userName]: {
       roles: {},
@@ -17,7 +17,7 @@ brain.stats.init = function() {
 
 brain.stats.modifyRoleAmount = function(role, diff) {
   let userName = Memory.username;
-  if (!config.stats.enabled || !userName) { return false; }
+  if (!config.advanced.stats.enabled || !userName) { return false; }
   if (Memory.stats && Memory.stats[userName] && Memory.stats[userName].roles) {
     let roleStat = Memory.stats[userName].roles[role];
     let previousAmount = roleStat ? roleStat : 0;
@@ -36,7 +36,7 @@ brain.stats.modifyRoleAmount = function(role, diff) {
  *
  */
 brain.stats.add = function(path, newContent) {
-  if (!config.stats.enabled || Game.time % 3) {
+  if (!config.advanced.stats.enabled || Game.time % 3) {
     return false;
   }
 
@@ -61,7 +61,7 @@ brain.stats.add = function(path, newContent) {
  *
  */
 brain.stats.addRoot = function() {
-  if (!config.stats.enabled || Game.time % 3) {
+  if (!config.advanced.stats.enabled || Game.time % 3) {
     return false;
   }
   brain.stats.add([], {
@@ -89,14 +89,31 @@ brain.stats.addRoot = function() {
  *
  */
 brain.stats.addRoom = function(roomName, previousCpu) {
-  if (!config.stats.enabled || Game.time % 3) {
-    return false;
-  }
-
+  if (!config.advanced.stats.enabled) return false;
   let room = Game.rooms[roomName];
-  if (!room) {
-    return false;
+  if (!room) return false;
+
+  let color = function(coeff) {
+      return '#' + (Math.floor(255 - coeff * 245)).toString(16) + (Math.floor(coeff * 245 + 10)).toString(16) + '00'
   }
+  room.visual.text(`Energie Average : ${Math.floor(room.memory.energyAvailable)}`, 5,0.5, {
+      color: color(Math.min(room.memory.energyAvailable, 5000) / 5000),
+      font: 1
+  });
+  room.visual.text(`| Storage Energy : ${room.storage && room.storage.store.energy}`, 17,0.5, {
+      color: color(Math.min(room.storage && room.storage.store.energy, 500000) / 500000),
+      font: 1
+  });
+  room.visual.text(`| Queue length : ${room.memory.queue.length}`, 28,0.5, {
+      color: color((20 - Math.min(room.memory.queue.length, 20)) / 20),
+      font: 1
+  });
+  room.visual.text(`| RCL progress : ${Math.floor(100 * room.controller.progress / room.controller.progressTotal)}%`, 38,0.5, {
+      color: color(room.controller.progress / room.controller.progressTotal),
+      font: 1
+  });
+  if (Game.time % 3) return false;
+
   room.memory.upgraderUpgrade = room.memory.upgraderUpgrade || 0;
   brain.stats.add(['room', roomName], {
     energy: {

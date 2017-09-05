@@ -19,9 +19,36 @@ roles.defender.settings = {
   fillTough: true
 };
 
+roles.defender.handle = function(creep) {
+  let hostile = creep.findClosestEnemy();
+
+  if (creep.fightRampart(hostile)) {
+    return true;
+  }
+
+  if (hostile !== null) {
+    return creep.attackHostile(hostile);
+  }
+
+  if (creep.healMyCreeps()) {
+    return true;
+  }
+
+  if (creep.healAllyCreeps()) {
+    return true;
+  }
+
+  if (creep.moveToHostileConstructionSites()) {
+    return true;
+  }
+
+  creep.moveRandom();
+  return true;
+}
+
 roles.defender.action = function(creep) {
   if (creep.inBase() && creep.memory.reverse) {
-    return Creep.recycleCreep(creep);
+    return creep.recycleCreep();
   }
   // TODO Better in premove
   if (!creep.inBase()) {
@@ -35,12 +62,8 @@ roles.defender.action = function(creep) {
 
   creep.heal(creep);
   var room = Game.rooms[creep.room.name];
-  if (room.memory.hostile) {
-    creep.handleDefender();
-    return true;
-  }
 
-  creep.handleDefender();
+  roles.defender.handle(creep);
   return true;
 };
 
@@ -48,11 +71,7 @@ roles.defender.preMove = function(creep, directions) {
   creep.heal(creep);
   let target = creep.findClosestEnemy();
   if (target !== null) {
-    creep.handleDefender();
+    roles.defender.handle(creep);
     return true;
   }
-};
-
-roles.defender.execute = function(creep) {
-  creep.log('Execute!!!');
 };

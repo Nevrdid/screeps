@@ -7,6 +7,7 @@ require('config_brain_quests');
 require('config_brain_squadmanager');
 require('config_brain_stats');
 require('prototype_creep');
+require('prototype_creep_work');
 require('prototype_creep_clean');
 require('prototype_creep_fight');
 require('prototype_creep_resources');

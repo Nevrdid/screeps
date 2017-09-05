@@ -121,7 +121,7 @@ Room.prototype.splitRoomName = function() {
 };
 
 Room.pathToString = function(path) {
-  if (!config.performance.serializePath) {
+  if (!config.advanced.performance.serializePath) {
     return path;
   }
 
@@ -142,7 +142,7 @@ Room.pathToString = function(path) {
 };
 
 Room.stringToPath = function(string) {
-  if (!config.performance.serializePath) {
+  if (!config.advanced.performance.serializePath) {
     return string;
   }
 

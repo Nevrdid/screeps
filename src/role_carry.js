@@ -16,20 +16,20 @@ roles.carry.flee = true;
 roles.carry.boostActions = ['capacity'];
 
 roles.carry.settings = {
-  param: ['energyCapacityAvailable'],
+  param: ['memory.energyAvailable'],
   prefixString: {
     300: '',
     550: 'W'
   },
   layoutString: 'MC',
-  amount: config.carry.sizes,
+  amount: config.basic.creeps.carry.sizes,
   maxLayoutAmount: 1
 };
 
 roles.carry.updateSettings = function(room, creep) {
-  if (creep.helper) {
+  if (creep.helper || creep.routing.targetRoom != room.name) {
     return {
-      prefixString: config.buildRoad.buildToOtherMyRoom ? 'W' : '',
+      prefixString: config.basic.structures.roads.buildToOtherMyRoom ? 'W' : '',
       layoutString: 'MC',
       amount: {
         0: [3, 3], // RCL 1
@@ -101,16 +101,7 @@ roles.carry.preMove = function(creep, directions) {
   }
 
   if (!creep.room.controller) {
-    var target = creep.findClosestSourceKeeper();
-    if (target !== null) {
-      let range = creep.pos.getRangeTo(target);
-      if (range > 6) {
-        creep.memory.routing.reverse = false;
-      }
-      if (range < 6) {
-        creep.memory.routing.reverse = true;
-      }
-    }
+    creep.fleeFromSk(6);
   }
 
   // TODO When does this happen? (Not on path?) - Handle better
@@ -152,7 +143,7 @@ roles.carry.preMove = function(creep, directions) {
           resourceAtPosition += resource.amount;
         }
         let amount = creep.room.getHarvesterAmount();
-        amount += Math.floor(resourceAtPosition / config.carry.callHarvesterPerResources);
+        amount += Math.floor(resourceAtPosition / config.basic.creeps.carry.callHarvesterPerResources);
         creep.room.checkRoleToSpawn('harvester', amount, 'harvester');
 
       }
@@ -237,26 +228,11 @@ roles.carry.action = function(creep) {
   }
 
   if (!creep.room.controller) {
-    var target = creep.findClosestSourceKeeper();
-    if (target !== null) {
-      let range = creep.pos.getRangeTo(target);
-      if (range < 5) {
-        delete creep.memory.routing.reached;
-        creep.memory.routing.reverse = true;
-      }
-    }
+    creep.fleeFromSk(5);
   }
 
   creep.memory.routing.reached = false;
   creep.memory.routing.reverse = true;
 
   return true;
-};
-
-roles.carry.execute = function(creep) {
-  // creep.log('Execute!!!');
-  let target = Game.getObjectById(creep.memory.routing.targetId);
-  if (target === null) {
-    delete creep.memory.routing.targetId;
-  }
 };

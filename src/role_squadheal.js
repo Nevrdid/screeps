@@ -94,7 +94,7 @@ roles.squadheal.action = function(creep) {
       }
     );
 
-    if (config.visualizer.enabled && config.visualizer.showPathSearches) {
+    if (config.advanced.visualizer.enabled && config.advanced.visualizer.showPathSearches) {
       visualizer.showSearch(search);
     }
 
@@ -112,8 +112,4 @@ roles.squadheal.action = function(creep) {
 
   creep.squadHeal();
   return true;
-};
-
-roles.squadheal.execute = function(creep) {
-  //  creep.log('Execute!!!');
 };

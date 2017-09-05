@@ -1,7 +1,6 @@
 'use strict';
 
 require('require');
-require('prototype_creep_startup_tasks');
 require('prototype_creep_move');
 require('prototype_roomPosition');
 require('prototype_room_init');
@@ -13,7 +12,7 @@ console.log('Starting TooAngel AI - Have fun');
 
 brain.stats.init();
 
-if (config.profiler.enabled) {
+if (config.advanced.profiler.enabled) {
   try {
     var profiler = require('screeps-profiler');
     for (let role of _.keys(roles)) {
@@ -24,7 +23,7 @@ if (config.profiler.enabled) {
     profiler.enable();
   } catch (e) {
     console.log('screeps-profiler not found');
-    config.profiler.enabled = false;
+    config.advanced.profiler.enabled = false;
   }
 }
 
@@ -43,7 +42,7 @@ var main = function() {
   brain.stats.addRoot();
   Memory.myRooms = _(Game.rooms).filter(r => r.execute()).map(r => r.name).value();
 
-  if (config.visualizer.enabled) {
+  if (config.advanced.visualizer.enabled) {
     visualizer.render();
   }
   brain.stats.add(['cpu'], {
@@ -52,7 +51,7 @@ var main = function() {
 };
 
 module.exports.loop = function() {
-  if (config.profiler.enabled) {
+  if (config.advanced.profiler.enabled) {
     profiler.wrap(function() {
       main();
     });

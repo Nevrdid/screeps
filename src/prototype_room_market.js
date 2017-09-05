@@ -3,7 +3,7 @@ const getAverage = (type, resource) => Memory.orders[type][resource] && Memory.o
 Room.prototype.trySellOrders = function(resource, sellAmount) {
   const avgBuyPrice = getAverage(ORDER_BUY, resource);
   const avgSellPrice = getAverage(ORDER_SELL, resource);
-  const mySellPrice = (avgBuyPrice || 1) * config.market.sellOrderPriceMultiplicator;
+  const mySellPrice = (avgBuyPrice || 1) * config.basic.market.sellOrderPriceMultiplicator;
   if (!avgSellPrice || mySellPrice <= avgSellPrice) {
     const sellOrders = _.filter(Game.market.orders, order => order.type === ORDER_SELL && order.roomName === this.name && order.resourceType === resource);
     if (sellOrders.length > 0) {
@@ -18,7 +18,7 @@ Room.prototype.trySellOrders = function(resource, sellAmount) {
         }
       }
     } else {
-      const amount = Math.min(config.market.sellOrderMaxAmount, sellAmount);
+      const amount = Math.min(config.basic.market.sellOrderMaxAmount, sellAmount);
       const retType = Game.market.createOrder(ORDER_SELL, resource, mySellPrice, amount, this.name);
       this.log('market.createOrder', ORDER_SELL, resource, mySellPrice, amount, this.name);
       if (retType === OK) {
@@ -27,7 +27,7 @@ Room.prototype.trySellOrders = function(resource, sellAmount) {
         this.log('market.createOrder: ', retType);
       }
     }
-    sellAmount -= config.market.sellOrderReserve;
+    sellAmount -= config.basic.market.sellOrderReserve;
   }
   return sellAmount;
 };
@@ -44,13 +44,13 @@ Room.prototype.handleMarket = function() {
     return false;
   }
 
-  if (this.terminal.store[resource] <= config.market.minAmount) {
+  if (this.terminal.store[resource] <= config.basic.market.minAmount) {
     return false;
   }
 
-  let sellAmount = this.terminal.store[resource] - config.market.minAmount;
+  let sellAmount = this.terminal.store[resource] - config.basic.market.minAmount;
 
-  if (config.market.trySellOrders) {
+  if (config.basic.market.trySellOrders) {
     sellAmount = this.trySellOrders(resource, sellAmount);
   }
 
@@ -63,7 +63,7 @@ Room.prototype.handleMarket = function() {
   }
 
   const sortByEnergyCostAndPrice = order => Game.market.calcTransactionCost(sellAmount, this.name, order.roomName) +
-    -order.price * sellAmount / config.market.energyCreditEquivalent;
+    -order.price * sellAmount / config.basic.market.energyCreditEquivalent;
 
   const orders = _.sortBy(Memory.orders[ORDER_BUY][resource].orders, sortByEnergyCostAndPrice);
   for (let order of orders) {

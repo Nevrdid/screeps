@@ -59,15 +59,34 @@ roles.extractor.terminalStorageExchange = function(creep) {
   return OK;
 };
 
-function executeExtractor(creep) {
+roles.extractor.action = function(creep) {
   let returnValue = roles.extractor.terminalStorageExchange(creep);
   if (returnValue === OK) {
     return true;
   } else {
-    return creep.handleExtractor();
+    if (!creep.room.terminal) {
+      creep.suicide();
+      return true;
+    }
+    let carrying = _.sum(creep.carry);
+    if (carrying === creep.carryCapacity) {
+      let returnCode = creep.moveToMy(creep.room.terminal.pos, 1);
+      for (let key in creep.carry) {
+        if (creep.carry[key] === 0) {
+          continue;
+        }
+        let returnCode = creep.transfer(creep.room.terminal, key);
+        return true;
+      }
+    }
+
+    let minerals = creep.room.find(FIND_MINERALS);
+    if (minerals.length > 0) {
+      let posMem = creep.room.memory.position.creep[minerals[0].id];
+      let pos = new RoomPosition(posMem.x, posMem.y, posMem.roomName);
+      let returnCode = creep.moveToMy(pos, 0);
+      creep.harvest(minerals[0]);
+    }
+    return true;
   }
-}
-
-roles.extractor.action = executeExtractor;
-
-roles.extractor.execute = executeExtractor;
+};

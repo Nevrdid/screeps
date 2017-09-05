@@ -166,23 +166,17 @@ Room.prototype.handleScout = function() {
     return false;
   }
   let shouldSpawn = (
-    this.exectueEveryTicks(config.room.scoutInterval) &&
+    this.executeEveryTicks(config.basic.creeps.scout.interval) &&
     this.controller.level >= 2 &&
-    this.memory.queue.length === 0 &&
-    config.room.scout
+    config.basic.creeps.scout.enable
   );
   if (shouldSpawn) {
-    let scout_spawn = {
-      role: 'scout'
-    };
-    if (!this.inQueue(scout_spawn)) {
-      this.memory.queue.push(scout_spawn);
-    }
+    this.checkRoleToSpawn('scout', config.basic.creeps.scout.amount, undefined, undefined, 0, this.name);
   }
 };
 
 Room.prototype.checkNeedHelp = function() {
-  let needHelp = this.memory.energyAvailableSum < config.carryHelpers.needTreshold * config.carryHelpers.ticksUntilHelpCheck; //&& !this.hostile;
+  let needHelp = this.memory.energyAvailableSum < config.basic.creeps.carry.helper.needTreshold * config.basic.creeps.carry.helper.interval; //&& !this.hostile;
   let oldNeedHelp = this.memory.needHelp;
   if (needHelp) {
     if (!oldNeedHelp) {
@@ -210,7 +204,7 @@ Room.prototype.checkCanHelp = function() {
 
   let nearestRoom = this.memory.nearestRoom;
   if (!nearestRoom || !Memory.rooms[nearestRoom] || !Memory.rooms[nearestRoom].needHelp) {
-    nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.carryHelpers.maxDistance);
+    nearestRoom = this.nearestRoomName(Memory.needEnergyRooms, config.basic.creeps.carry.helper.maxDistance);
     this.memory.nearestRoom = nearestRoom;
   }
   if (!Game.rooms[nearestRoom] || !Memory.rooms[nearestRoom].needHelp) {
@@ -218,7 +212,7 @@ Room.prototype.checkCanHelp = function() {
   }
   let nearestRoomObj = Game.rooms[nearestRoom];
 
-  let canHelp = this.memory.energyAvailableSum > config.carryHelpers.helpTreshold * config.carryHelpers.ticksUntilHelpCheck &&
+  let canHelp = this.memory.energyAvailableSum > config.basic.creeps.carry.helper.helpTreshold * config.basic.creeps.carry.helper.interval &&
     nearestRoom !== this.name && nearestRoomObj && this.storage && //!nearestRoomObj.hostile &&
     !nearestRoomObj.terminal;
   if (canHelp) {
@@ -226,7 +220,7 @@ Room.prototype.checkCanHelp = function() {
     if (route == -2 || route.length === 0) {
       return 'no';
     }
-    this.checkRoleToSpawn('carry', config.carryHelpers.maxHelpersAmount, this.storage.id,
+    this.checkRoleToSpawn('carry', config.basic.creeps.carry.helper.amount, this.storage.id,
       this.name, undefined, nearestRoom, { helper: true });
     this.memory.energyAvailableSum = 0;
     return '---!!! ' + this.name + ' send energy to: ' + nearestRoom + ' !!!---';
@@ -236,14 +230,14 @@ Room.prototype.checkCanHelp = function() {
 };
 
 Room.prototype.checkForEnergyTransfer = function() {
-  if (config.carryHelpers.disabled) {
+  if (config.basic.creeps.carry.helper.disabled) {
     return false;
   }
 
   Memory.needEnergyRooms = Memory.needEnergyRooms || [];
   this.memory.energyAvailableSum = this.memory.energyAvailableSum || 0;
-  if (!this.exectueEveryTicks(config.carryHelpers.ticksUntilHelpCheck)) {
-    let factor = config.carryHelpers.factor;
+  if (!this.executeEveryTicks(config.basic.creeps.carry.helper.interval)) {
+    let factor = config.basic.creeps.carry.helper.factor;
     this.memory.energyAvailable = (1 - factor) * this.memory.energyAvailable + (factor) * this.energyAvailable || 0;
     this.memory.energyAvailableSum += this.memory.energyAvailable;
     return;
@@ -271,10 +265,10 @@ Room.prototype.getHarvesterAmount = function() {
       amount = 5;
     }
   } else {
-    if (this.storage.store.energy < config.creep.energyFromStorageThreshold && this.controller.level < 5) {
+    if (this.storage.store.energy < config.basic.creeps.energyFromStorageThreshold && this.controller.level < 5) {
       amount = 3;
     }
-    if (this.storage.store.energy > 2 * config.creep.energyFromStorageThreshold && this.controller.level > 6) {
+    if (this.storage.store.energy > 2 * config.basic.creeps.energyFromStorageThreshold && this.controller.level > 6) {
       amount = 2;
     }
     if (!this.storage.my) {
@@ -302,7 +296,7 @@ Room.prototype.executeRoom = function() {
 
   if (spawns.length === 0) {
     this.reviveRoom();
-  } else if (this.energyCapacityAvailable < config.room.reviveEnergyCapacity) {
+  } else if (this.energyCapacityAvailable < config.basic.room.revive.energyCapacityTreshold) {
     this.reviveRoom();
     if (hostiles.length > 0) {
       this.controller.activateSafeMode();
@@ -363,12 +357,12 @@ Room.prototype.executeRoom = function() {
       if (this.memory.attackTimer > 300) {
         role = 'defendmelee';
       }
-      if (this.exectueEveryTicks(250)) {
+      if (this.executeEveryTicks(250)) {
         this.checkRoleToSpawn(role, 1, undefined, this.name, 1, this.name);
       }
     }
 
-    if (this.exectueEveryTicks(10)) {
+    if (this.executeEveryTicks(10)) {
       this.log('Under attack from ' + hostiles[0].owner.username);
     }
     if (hostiles[0].owner.username !== 'Invader' && !brain.isFriend(hostiles[0].owner.username)) {
@@ -384,7 +378,7 @@ Room.prototype.executeRoom = function() {
     this.checkRoleToSpawn('storagefiller', 1, 'filler');
   }
 
-  if (this.storage && this.storage.my && this.storage.store.energy > config.room.upgraderMinStorage && !this.memory.misplacedSpawn) {
+  if (this.storage && this.storage.my && this.storage.store.energy > config.basic.creeps.upgrader.minStorage && !this.memory.misplacedSpawn) {
     this.checkRoleToSpawn('upgrader', 1, this.controller.id);
   }
 
@@ -408,12 +402,12 @@ Room.prototype.executeRoom = function() {
     let minerals = this.find(FIND_MINERALS);
     if (minerals.length > 0 && minerals[0].mineralAmount > 0) {
       let amount = this.terminal.store[minerals[0].mineralType] || 0;
-      if (amount < config.mineral.storage) {
+      if (amount < config.basic.mineral.storage) {
         this.checkRoleToSpawn('extractor');
       }
     }
   }
-  if (config.mineral.enabled && this.terminal) {
+  if (config.basic.mineral.enabled && this.terminal) {
     this.checkRoleToSpawn('mineral');
   }
 
@@ -447,7 +441,7 @@ Room.prototype.reviveMyNow = function() {
   let roomsMy = _.sortBy(Memory.myRooms, sortByDistance);
 
   for (let roomIndex in roomsMy) {
-    if (nextroomerCalled > config.nextRoom.numberOfNextroomers) {
+    if (nextroomerCalled > config.basic.creeps.nextroomer.amount) {
       break;
     }
     let roomName = Memory.myRooms[roomIndex];
@@ -458,21 +452,21 @@ Room.prototype.reviveMyNow = function() {
     if (!roomOther.memory.active) {
       continue;
     }
-    if (!roomOther.storage || roomOther.storage.store.energy < config.room.reviveStorageAvailable) {
+    if (!roomOther.storage || roomOther.storage.store.energy < config.basic.room.revive.storageAvailableTreshold) {
       continue;
     }
     // TODO find a proper value
-    if (roomOther.memory.queue.length > config.revive.reviverMaxQueue) {
+    if (roomOther.memory.queue.length > config.basic.room.revive.reviverMaxQueue) {
       continue;
     }
 
     // TODO config value, meaningful
-    if (roomOther.energyCapacityAvailable < config.revive.reviverMinEnergy) {
+    if (roomOther.energyCapacityAvailable < config.basic.room.revive.reviverMinEnergy) {
       continue;
     }
 
     let distance = Game.map.getRoomLinearDistance(this.name, roomName);
-    if (distance < config.nextRoom.maxDistance) {
+    if (distance < config.basic.room.my.maxNewRoomDistance) {
       let route = this.findRoute(roomOther.name, this.name);
       // TODO Instead of skipping we could try to free up the way: nextroomerattack or squad
       if (route.length === 0) {
@@ -518,13 +512,13 @@ Room.prototype.setRoomInactive = function() {
 Room.prototype.reviveRoom = function() {
   let nextRoomers = _.filter(Game.creeps, c => c.memory.role === 'nextroomer' &&
     c.memory.routing.targetRoom === this.name).length;
-  if (this.controller.level >= config.nextRoom.boostToControllerLevel &&
+  if (this.controller.level >= config.basic.room.my.boostToControllerLevel &&
     this.controller.ticksToDowngrade >
-    (CONTROLLER_DOWNGRADE[this.controller.level] * config.nextRoom.minDowngradPercent / 100) &&
-    this.energyCapacityAvailable > config.nextRoom.minEnergyForActive) {
+    (CONTROLLER_DOWNGRADE[this.controller.level] * config.basic.room.my.minDowngradPercent / 100) &&
+    this.energyCapacityAvailable > config.basic.room.my.minEnergyForActive) {
     this.memory.active = true;
     return false;
-  } else if (this.controller.level > 1 && nextRoomers >= config.nextRoom.numberOfNextroomers) {
+  } else if (this.controller.level > 1 && nextRoomers >= config.basic.creeps.nextroomer.amount) {
     return false;
   }
 
@@ -534,7 +528,7 @@ Room.prototype.reviveRoom = function() {
 
   this.handleTower();
   this.handleTerminal();
-  if (!config.room.revive) {
+  if (!config.basic.room.revive.enable) {
     return false;
   }
 
@@ -543,8 +537,8 @@ Room.prototype.reviveRoom = function() {
     return false;
   }
 
-  if (!config.revive.disabled && this.controller.level >= 1 &&
-    this.exectueEveryTicks(config.nextRoom.nextroomerInterval)) {
+  if (this.controller.level >= 1 &&
+    this.executeEveryTicks(config.basic.creeps.nextroomer.interval)) {
     this.reviveMyNow();
   }
   return true;

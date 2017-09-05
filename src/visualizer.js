@@ -1,6 +1,6 @@
 'use strict';
 
-if (config.visualizer.enabled) {
+if (config.advanced.visualizer.enabled) {
   global.visualizer = {
 
     drawPosition(rv, position, text, color) {
@@ -163,22 +163,22 @@ if (config.visualizer.enabled) {
     },
 
     render() {
-      if (config.visualizer.showCostMatrixes) {
+      if (config.advanced.visualizer.showCostMatrixes) {
         this.showCostMatrixes();
       }
-      if (config.visualizer.showRoomPaths) {
+      if (config.advanced.visualizer.showRoomPaths) {
         this.showRoomPaths();
       }
-      if (config.visualizer.showCreepPaths) {
+      if (config.advanced.visualizer.showCreepPaths) {
         this.showCreepPaths();
       }
-      if (config.visualizer.showStructures) {
+      if (config.advanced.visualizer.showStructures) {
         this.showStructures();
       }
-      if (config.visualizer.showCreeps) {
+      if (config.advanced.visualizer.showCreeps) {
         this.showCreeps();
       }
-      if (config.visualizer.showBlockers) {
+      if (config.advanced.visualizer.showBlockers) {
         this.showBlockers();
       }
     }

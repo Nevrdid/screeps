@@ -195,8 +195,8 @@ roles.nextroomer.settle = function(creep) {
   if (hostileCreeps.length) {
     room.memory.underSiege = true;
     if (creep.room.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[creep.room.controller.level] / 10 || creep.room.controller.level === 1) {
-      let methods = [Creep.getEnergy, Creep.upgradeControllerTask];
-      return Creep.execute(creep, methods);
+      let methods = ['getEnergy', 'upgradeControllerTask'];
+      return creep.execute(methods);
     }
   }
   room.memory.wayBlocked = false;
@@ -223,28 +223,28 @@ roles.nextroomer.settle = function(creep) {
     }
   }
 
-  let methods = [Creep.getEnergy];
+  let methods = ['getEnergy'];
   if (creep.room.controller.ticksToDowngrade < 1500 || creep.room.controller.progress > creep.room.controller.progressTotal) {
-    methods.push(Creep.upgradeControllerTask);
+    methods.push('upgradeControllerTask');
   }
 
   let spawnCSs = creep.room.findPropertyFilter(FIND_MY_CONSTRUCTION_SITES, 'structureType', [STRUCTURE_SPAWN]);
   let spawns = creep.room.findPropertyFilter(FIND_MY_STRUCTURES, 'structureType', [STRUCTURE_SPAWN]);
   if (spawns.length === 0 && spawnCSs.length > 0) {
-    methods.push(Creep.constructTask);
+    methods.push('constructTask');
   }
 
   let structures = creep.room.findPropertyFilter(FIND_MY_CONSTRUCTION_SITES, 'structureType', [STRUCTURE_RAMPART, STRUCTURE_CONTROLLER], true);
   if (creep.room.controller.level >= 3 && structures.length > 0) {
-    methods.push(Creep.constructTask);
+    methods.push('constructTask');
   }
 
   if (creep.room.controller.level < 8) {
-    methods.push(Creep.upgradeControllerTask);
+    methods.push('upgradeControllerTask');
   }
 
-  methods.push(Creep.transferEnergy);
-  return Creep.execute(creep, methods);
+  methods.push('transferEnergy');
+  return creep.execute(methods);
 };
 
 roles.nextroomer.preMove = function(creep, directions) {
@@ -280,9 +280,4 @@ roles.nextroomer.action = function(creep) {
     return roles.nextroomer.settle(creep);
   }
   return roles.nextroomer.settle(creep);
-};
-
-roles.nextroomer.execute = function(creep) {
-  creep.log('Execute!!!');
-  //creep.moveTo(25, 25);
 };

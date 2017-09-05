@@ -95,7 +95,7 @@ Room.prototype.destroyStructure = function(structure) {
     this.memory.misplacedSpawn = true;
 
     // Build ramparts around the spawn if wallThickness > 1
-    if (config.layout.wallThickness > 1) {
+    if (config.basic.room.layout.wallThickness > 1) {
       let costMatrixBase = this.getMemoryCostMatrix();
       let spawns = this.findPropertyFilter(FIND_MY_STRUCTURES, 'structureType', [STRUCTURE_SPAWN]);
       let getWalls = function(object) {

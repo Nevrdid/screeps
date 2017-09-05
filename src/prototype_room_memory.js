@@ -21,7 +21,7 @@
  */
 Room.prototype.setMemoryCostMatrix = function(costMatrix) {
   this.checkCache();
-  if (this.controller && this.controller.my || Game.gcl.level < config.performance.costMatrixMemoryMaxGCL) {
+  if (this.controller && this.controller.my || Game.gcl.level < config.advanced.performance.costMatrixMemoryMaxGCL) {
     if (!this.memory.costMatrix) {
       this.memory.costMatrix = {};
     }
@@ -103,7 +103,7 @@ Room.prototype.getMemoryPath = function(name) {
   this.checkCache();
 
   let isValid = function(path) {
-    return path.fixed || path.created > Game.time - config.path.refresh;
+    return path.fixed || path.created > Game.time - config.basic.room.path.refresh;
   };
 
   if (cache.rooms[this.name].routing[name] && isValid(cache.rooms[this.name].routing[name])) {

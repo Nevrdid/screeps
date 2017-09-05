@@ -10,7 +10,7 @@
  */
 
 global.runAgent = function() {
-  Memory.screepsplusToken = config.stats.screepsPlusToken;
+  Memory.screepsplusToken = config.advanced.stats.screepsPlusToken;
   let output = `<SCRIPT>
   if(!document.pushStats){
     document.pushStats = function(){
@@ -35,6 +35,6 @@ global.runAgent = function() {
   </SCRIPT>`;
   console.log(output.split('\n').map((s) => s.trim()).join(''));
 };
-if (config.stats.enabled && config.stats.screepsPlusEnabled && config.stats.screepsPlusToken) {
+if (config.advanced.stats.enabled && config.advanced.stats.screepsPlusEnabled && config.advanced.stats.screepsPlusToken) {
   runAgent();
 }

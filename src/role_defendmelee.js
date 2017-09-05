@@ -14,17 +14,17 @@ roles.defendmelee.settings = {
   fillTough: true
 };
 
-roles.defendmelee.execute = function(creep) {
+roles.defendmelee.action = function(creep) {
   let hostile = creep.findClosestEnemy();
   if (hostile === null) {
-    return Creep.recycleCreep(creep);
+    return this.recycleCreep();
   }
   let search = PathFinder.search(
     creep.pos,
     hostile.pos, {
       roomCallback: creep.room.getCostMatrixCallback(hostile.pos)
     });
-  if (config.visualizer.enabled && config.visualizer.showPathSearches) {
+  if (config.advanced.visualizer.enabled && config.advanced.visualizer.showPathSearches) {
     visualizer.showSearch(search);
   }
   let direction = creep.pos.getDirectionTo(search.path[0]);

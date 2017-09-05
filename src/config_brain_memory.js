@@ -31,7 +31,7 @@ brain.setConstructionSites = function() {
     Memory.constructionSites = {};
   }
 
-  if (Game.time % config.constructionSite.maxIdleTime === 0) {
+  if (Game.time % config.basic.structures.constructionSite.maxIdleTime === 0) {
     let constructionSites = {};
     for (let csId in Game.constructionSites) {
       let cs = Game.constructionSites[csId];
@@ -125,8 +125,8 @@ brain.cleanRooms = function() {
         delete Memory.rooms[name];
         continue;
       }
-      if (Memory.rooms[name].lastSeen < Game.time - config.room.lastSeenThreshold) {
-        console.log(`Deleting ${name} from memory older than ${config.room.lastSeenThreshold}`);
+      if (Memory.rooms[name].lastSeen < Game.time - config.basic.room.external.lastSeenThreshold) {
+        console.log(`Deleting ${name} from memory older than ${config.basic.room.external.lastSeenThreshold}`);
         delete Memory.rooms[name];
         continue;
       }
@@ -203,7 +203,7 @@ brain.prepareMemory = function() {
   brain.cleanCreeps();
   brain.cleanSquads();
   brain.cleanRooms();
-  if (config.stats.summary) {
+  if (config.advanced.stats.summary) {
     brain.printSummary();
   }
 };
