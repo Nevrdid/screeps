@@ -9,8 +9,8 @@ require('prototype_room_costmatrix');
 require('visualizer');
 require('screepsplus');
 
-console.log('Starting TooAngel AI - Have fun');
-
+console.log('Starting TooAngel AI - Have fun - Actual tick : ' + Game.time);
+brain.prepareMemory();
 brain.stats.init();
 
 let profiler;
@@ -20,6 +20,7 @@ if (config.profiler.enabled) {
     for (const role of _.keys(roles)) {
       profiler.registerObject(roles[role], 'Role_' + role);
     }
+    profiler.registerObject(PathFinder, 'PathFinder');
     profiler.registerObject(brain, 'Brain');
     profiler.enable();
   } catch (e) {
@@ -27,13 +28,13 @@ if (config.profiler.enabled) {
     config.profiler.enabled = false;
   }
 }
-
 const main = function() {
-  if (Game.cpu.bucket < 2 * Game.cpu.tickLimit) {
-    console.log('Skipping tick ' + Game.time + ' due to lack of CPU.');
+  if (Game.cpu.bucket < 2 * Game.cpu.tickLimit && Game.cpu.tickLimit < Game.cpu.bucket) {
+    console.log('Skipping tick ' + Game.time + ' due to lack of CPU. Limit:' + Game.cpu.tickLimit + ' - Bucket: ' + Game.cpu.bucket);
     return;
   }
 
+  Memory.myRooms = Memory.myRooms || [];
   try {
     brain.prepareMemory();
     brain.handleNextroom();

@@ -135,6 +135,10 @@ Creep.prototype.getDirections = function(path, pathPos) {
       // this.memory.routing.reached);
       // if (true) throw new Error();
       this.say('EoP');
+      //this.moveTo(new RoomPosition(25,25,this.pos.roomName))      
+      //delete this.memory.routing.route;
+      //delete this.memory.routing.pathPos;
+      //delete this.memory.routing.routePos;
       return;
     }
     direction = forwardDirection;
@@ -163,19 +167,29 @@ Creep.prototype.followPath = function(action) {
     return action(this);
   }
   const prepareData = this.moveByPathPrepare(route, routePos, 'pathStart', this.memory.routing.targetId);
+  
   if (prepareData.unit.preMove) {
     if (prepareData.unit.preMove(this, prepareData.directions)) {
       return true;
     }
   }
+  
   return this.moveByPathMy(route, routePos, 'pathStart', this.memory.routing.targetId, action, prepareData);
 };
 
-Creep.prototype.moveByPathPrepare = function(route, routePos, start, target) {
+Creep.prototype.moveByPathPrepare = function(route, routePos, start, targetId) {
   const result = {};
   result.unit = roles[this.memory.role];
   // Somehow reset the pathPos if the path has changed?!
-  result.path = this.room.getPath(route, routePos, start, target);
+  /**
+  if (targetId) {
+    const target = Game.getObjectById(targetId);
+    if (!target) {
+      return result;
+    }
+  }
+  **/
+  result.path = this.room.getPath(route, routePos, start, targetId);
   if (!result.path) {
     return result;
   }
@@ -198,6 +212,9 @@ Creep.prototype.moveByPathMy = function(route, routePos, start, target, action, 
     // this.room.name + ' ' + this.memory.base + ' ' +
     // this.memory.routing.targetRoom + ' routePos: ' + routePos + ' route: ' +
     // JSON.stringify(route));
+    if (this.memory.role ==='defender') {
+       // delete this.memory.routing.targetId;
+    }
     this.say('R:no path');
     this.log('R:no path');
     // this.log('R:no path: pathStart-' + this.memory.routing.targetId);
@@ -214,7 +231,12 @@ Creep.prototype.moveByPathMy = function(route, routePos, start, target, action, 
 
     let posFirst;
     try {
-      posFirst = new RoomPosition(path[0].x, path[0].y, path[0].roomName);
+      if (this.memory.routing.reverse) {
+        posFirst = new RoomPosition(path[0].x, path[0].y, path[0].roomName);
+      } else {
+          const step = path.length > 1 ? path.length - 2 : path.length - 1;
+        posFirst = new RoomPosition(path[step].x, path[step].y, path[step].roomName);
+      }
     } catch (e) {
       // TODO config.serializePath mismatch with memory is the only case I know of
       this.log('Can not parse path in cache will delete Memory');
@@ -242,6 +264,8 @@ Creep.prototype.moveByPathMy = function(route, routePos, start, target, action, 
       this.moveTo(posFirst);
       return true;
     }
+    
+    
 
     // this.log('creep_routing.followPath not on path: ' +
     // this.pos.getDirectionTo(search.path[0]) + ' pathPos: ' + pathPos + ' pos:
@@ -277,6 +301,7 @@ Creep.prototype.moveByPathMy = function(route, routePos, start, target, action, 
         // this.log('creep_routing.followPath reached: ' + pathPos + '
         // path.length: ' + path.length);
         this.memory.routing.reached = true;
+        this.memory.timeToTravel = 1500 - this.ticksToLive;
         return action(this);
       }
     }

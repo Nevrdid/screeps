@@ -36,6 +36,21 @@ roles.sourcer.settings = {
   },
 };
 
+roles.sourcer.updateSettings = function(room, creep) {
+  if (creep.routing.targetRoom && creep.routing.targetRoom !== room.name) {
+    return {
+      param: 'energyCapacityAvailable', //TODO : use memory.energyStats.average once merged.
+      layoutString: 'MW',
+      amount: {
+          300: [2, 2],
+          450: [3, 3],
+          600: [4, 4],
+          750: [5, 5],
+        },
+    };
+  }
+};
+
 roles.sourcer.buildRoad = true;
 roles.sourcer.killPrevious = true;
 
@@ -43,6 +58,16 @@ roles.sourcer.killPrevious = true;
 roles.sourcer.flee = false;
 
 roles.sourcer.preMove = function(creep, directions) {
+    // TODO Check if this is working
+  if (!creep.inBase() || creep.room.controller.level < 4) {
+    const dir = directions && directions.direction;
+    if (dir === 1 || dir === 3 || dir === 5 || dir === 7) {
+      const reverseDir = directions.direction > 4 ? directions.direction - 4 : directions.direction + 4;
+      const randomDir = Game.time % 2 ? 1 : -1;
+      const pos = creep.pos.getAdjacentPosition(reverseDir);
+      creep.moveCreep(pos, (reverseDir + 3 * randomDir) % 8 || 8);
+    }
+  }
   // Misplaced spawn
   if (creep.inBase() && (creep.room.memory.misplacedSpawn || creep.room.controller.level < 3)) {
     // creep.say('smis', true);
@@ -71,12 +96,6 @@ roles.sourcer.preMove = function(creep, directions) {
     }
   }
 
-  // TODO Check if this is working
-  if (directions) {
-    const pos = creep.pos.getAdjacentPosition(directions.direction);
-    creep.moveCreep(pos, (directions.direction + 3) % 8 + 1);
-  }
-
   // TODO copied from nextroomer, should be extracted to a method or a creep flag
   // Remove structures in front
   if (!directions) {
@@ -85,9 +104,12 @@ roles.sourcer.preMove = function(creep, directions) {
   // TODO when is the forwardDirection missing?
   if (directions.forwardDirection) {
     const posForward = creep.pos.getAdjacentPosition(directions.forwardDirection);
+    let terrain = posForward.lookFor(LOOK_TERRAIN);
     const structures = posForward.lookFor(LOOK_STRUCTURES);
-    for (const structure of structures) {
+    let structure;
+    for (structure of structures) {
       if (structure.structureType === STRUCTURE_ROAD) {
+        terrain = ['road'];
         continue;
       }
       if (structure.structureType === STRUCTURE_RAMPART && structure.my) {
@@ -99,6 +121,12 @@ roles.sourcer.preMove = function(creep, directions) {
       creep.dismantle(structure);
       creep.say('dismantle', true);
       break;
+    }
+    if (creep.pos.x !== creep.memory.last.pos1.x || creep.pos.y !== creep.memory.last.pos1.y) {
+      if (!creep.memory.pathDatas) {
+        creep.memory.pathDatas = {swamp: 0, plain: 0, road: 0};
+      }
+      creep.memory.pathDatas[terrain[0]]++;
     }
   }
 };

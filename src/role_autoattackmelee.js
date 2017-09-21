@@ -9,8 +9,12 @@
 roles.autoattackmelee = {};
 
 roles.autoattackmelee.settings = {
+  param: ['energyCapacityAvailable'],
   layoutString: 'MA',
-  amount: [1, 1],
+  amount: {
+    0: [0,0],
+    651: [4, 4],
+  },
   fillTough: true,
 };
 

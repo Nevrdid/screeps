@@ -167,6 +167,50 @@ Room.stringToPath = function(string) {
   return path;
 };
 
+
+/**
+Room.prototype.randomRoomAround = function(exits) { //TODO : move to rooms proto
+  let target;
+  let rooms = exits || Game.map.describeExits(this.name);
+  while (!target) {
+    target = rooms[Math.floor(Math.random() * 4 - 0.01) * 2 + 1];
+  }
+  return target;
+};
+**/
+
+Room.prototype.randomRoomAround = function(base) {
+  let rooms = Game.map.describeExits(this.name);
+  let age;
+  let roomsRet = [];
+  let totalAge = 0;
+  for (let direction in rooms) {
+    let roomNext = rooms[direction];
+    let roomMem = Memory.rooms[roomNext];
+    if (roomMem && (roomMem.tickHostilesSeen && (Game.time - roomMem.tickHostilesSeen) < config.scout.intervalBetweenHostileVisits ||
+      roomMem.tickBlockedFlag && (Game.time - roomMem.tickBlockedFlag) < config.scout.intervalBetweenBlockedVisits)) {
+      continue;
+    }
+    let distance = Math.min(Game.map.getRoomLinearDistance(roomNext, base), config.scout.maxDistanceAroundTarget);
+    age = roomMem ? ( Game.time - roomMem.lastSeen) || 1 :  config.scout.intervalBetweenRoomVisits;
+    age = Math.ceil( age * (config.scout.maxDistanceAroundTarget - distance) / config.scout.maxDistanceAroundTarget);
+    Memory.rooms[roomNext] = roomMem || {};
+    Memory.rooms[roomNext].lastAge = age;
+    
+    //age = age < 10 ? 
+    roomsRet.push({name: roomNext, age: age});
+    totalAge += age;
+  }
+  let random = Math.random() * totalAge;
+  totalAge = 0;
+  for (let room of roomsRet) {
+    totalAge += room.age;
+    if (totalAge >= random) {
+      return room.name;
+    }
+  }
+};
+
 Room.test = function() {
   const original = Memory.rooms.E37N35.routing['pathStart-harvester'].path;
   const string = Room.pathToString(original);

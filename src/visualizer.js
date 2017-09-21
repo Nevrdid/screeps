@@ -244,7 +244,7 @@ global.visualizer.myRoomDatasDraw = function(roomName) {
       }).sortBy((roomRet) => -Memory.rooms[roomRet.roomName].queue.length).value()[0];
     const output = `=========================
       Game time: ${Game.time}
-      Progress: ${(Game.gcl.progress - Memory.progress) / 100}/${Memory.myRooms.length * 15}
+      Progress: ${((Game.gcl.progress - Memory.progress) / (Game.time % 100))}/${Memory.myRooms.length * 15}
       ConstructionSites: ${Object.keys(Memory.constructionSites).length}
       -------------------------
       No storage: ${Memory.summary.storageNoString}

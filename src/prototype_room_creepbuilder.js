@@ -22,7 +22,7 @@ Room.prototype.getPriority = function(object) {
   const priority = config.priorityQueue;
   const target = object.routing && object.routing.targetRoom;
   if (target === this.name) {
-    return priority.sameRoom[object.role] || 4;
+    return priority.sameRoom[object.role] || 9;
   } else if (target) {
     return priority.otherRoom[object.role] || 20 + Game.map.getRoomLinearDistance(this.name, target);
   } else {
@@ -66,7 +66,7 @@ Room.prototype.inQueue = function(creepMemory) {
       }
       continue;
     }
-    if (creepMemory.routing.targetId === item.routing.targetId && creepMemory.routing.targetRoom === item.routing.targetRoom) {
+    if ((!creepMemory.routing.targetId || creepMemory.routing.targetId === item.routing.targetId) && creepMemory.routing.targetRoom === item.routing.targetRoom) {
       return true;
     }
   }

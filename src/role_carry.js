@@ -19,7 +19,7 @@ roles.carry.settings = {
   param: ['energyCapacityAvailable'],
   prefixString: {
     300: '',
-    550: 'W',
+    550: 'MW',
   },
   layoutString: 'MC',
   amount: config.carry.sizes,
@@ -68,14 +68,43 @@ roles.carry.handleMisplacedSpawn = function(creep) {
   if (creep.inBase() && (creep.room.memory.misplacedSpawn || creep.room.controller.level < 3)) {
     //     creep.say('cmis', true);
     if (creep.carry.energy > 0) {
-      const structure = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
-        filter: (object) => object.energy < object.energyCapacity,
-      });
-      creep.moveTo(structure, {
-        ignoreCreeps: true,
-      });
-      creep.transfer(structure, RESOURCE_ENERGY);
-      return true;
+        let target = creep.pos.findInRange(FIND_MY_CREEPS, 1, {
+          filter: (c) => (c.memory.role === 'harvester' && c.carry.energy < c.carryCapacity),
+        })[0];
+      if(target) {
+          delete target.memory.routing.targetId;
+          //creep.drop(RESOURCE_ENERGY)
+          //creep.memory.dropped = true;
+      }
+      if (!target){
+        /*target = creep.pos.findClosestByRangePropertyFilter(FIND_MY_CREEPS, 'memory.role', 'carry', {
+          filter: (c) => {
+            if (c.id !== creep.id && c.carry.energy < c.carryCapacity && !c.memory.routing.reverse && c.memory.routing.pathPos <  creep.memory.routing.pathPos) {
+              return true;
+            }
+          }
+        });*/
+      }
+      if (!target) {
+        const target = creep.pos.findClosestByRangePropertyFilter(FIND_MY_STRUCTURES,'structureType', STRUCTURE_SPAWN, {
+          filter: (object) => object.energy < object.energyCapacity,
+        });
+        
+      }
+      if (target && !creep.isStuck()) {
+        creep.moveTo(target, {
+          ignoreCreeps: !creep.isStuck(),
+        });
+        const returnCode = creep.transfer(target, RESOURCE_ENERGY);
+        if (returnCode === OK && (!target.carryCapacity || creep.carry.energy * 0.5 <= target.carryCapacity -target.carry.energy)) {
+          creep.memory.routing.reverse = false;
+          if (target.carryCapacity) {
+            target.memory.routing.reverse = true;
+          }
+          
+        }
+        return true;
+      }
     } else {
       const targetId = creep.memory.routing.targetId;
 
@@ -90,13 +119,19 @@ roles.carry.handleMisplacedSpawn = function(creep) {
         }
       }
     }
-    return false;
   }
 };
 
 roles.carry.preMove = function(creep, directions) {
   roles.carry.checkHelperEmptyStorage(creep);
-
+  const pos1 = creep.memory.last && creep.memory.last.pos1;
+const pos2 = creep.memory.last && creep.memory.last.pos2;
+const pos3 = creep.memory.last && creep.memory.last.pos3;
+  //if ( pos3 && creep.pos.x === pos2.x && creep.pos.y === pos2.y && pos3.x === pos1.x && pos3.y === pos1.y) { // fix infinity switch
+  if (pos3 && _.eq([creep.pos.x, creep.pos.y], [pos2.x, pos2.y]) && _.eq(pos1, pos3) && !_.eq(pos1, pos2)) {
+      creep.moveRandom();
+      return true;
+  }
   if (roles.carry.handleMisplacedSpawn(creep)) {
     return true;
   }
@@ -163,7 +198,7 @@ roles.carry.preMove = function(creep, directions) {
     }
   }
 
-  reverse = creep.pickupWhileMoving(reverse);
+  reverse =creep.pickupWhileMoving(reverse);
   if (reverse) {
     //     creep.log('reverse');
     directions.direction = directions.backwardDirection;
@@ -220,13 +255,14 @@ roles.carry.action = function(creep) {
     }
 
     const resource = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
-    if (resource !== null) {
+    if (resource !== null &&  !creep.memory.dropped) {
       creep.memory.routing.targetId = resource.id;
       // TODO Use pathfinder
       creep.moveTo(resource);
       creep.pickup(resource, resource.amount - 1);
       return true;
     }
+    creep.memory.dropped = false;
   }
   // TODO this should be last position => reverse - In preMove make sure a reverse stays if it is set here
   let reverse = false;

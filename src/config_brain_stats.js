@@ -114,7 +114,7 @@ brain.stats.addRoom = function(roomName, previousCpu) {
     },
     controller: {
       progress: room.controller.progress,
-      preCalcSpeed: room.memory.upgraderUpgrade / (Game.time % 100),
+      preCalcSpeed: room.memory.upgraderUpgrade / (Game.time % 100 || 1),
       progressTotal: room.controller.progressTotal,
     },
     creeps: {

@@ -97,9 +97,16 @@ Creep.prototype.handle = function() {
           return unit.action(this);
         }
       }
-
-      if (this.followPath(unit.action)) {
+      if (this.memory.forced) {
+          delete this.memory.forced;
+          return;
+      }
+      const target = Game.getObjectById(this.memory.routing.targetId);
+      if (/*this.room.memory.routing.length &&*/ this.followPath(unit.action)) {
         return true;
+      } else if (target){
+          this.moveTo(target);
+          return true;
       }
     }
 
@@ -197,10 +204,12 @@ Creep.prototype.stayInRoom = function() {
 };
 
 Creep.prototype.buildRoad = function() {
-  if (this.room.controller && this.room.controller.my &&
-    this.room.energyCapacityAvailable < 550 &&
-    this.pos.lookFor(LOOK_TERRAIN)[0] !== 'swamp') {
+  const baseRoom = Game.rooms[this.memory.base];
+  if (this.room.controller && 
+    (this.room.controller.my || this.room.memory.reservation) &&
+    (baseRoom.energyCapacityAvailable < 550 || (baseRoom.energyCapacityAvailable <= 800 && this.pos.lookFor(LOOK_TERRAIN)[0] !== 'swamp'))) {
     return false;
+    
   }
 
   // TODO as creep variable

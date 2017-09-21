@@ -178,6 +178,7 @@ brain.printSummary = function() {
     const room = Game.rooms[name];
     if (!room || !room.storage) {
       strings.storageNoString += name + ' ';
+      room.memory.upgraderUpgrade = 0;
       continue;
     }
     brain.getStorageStringForRoom(strings, room, interval);
@@ -201,8 +202,6 @@ Upgrade less: ${strings.upgradeLess}
 
 brain.prepareMemory = function() {
   Memory.username = Memory.username || _.chain(Game.rooms).map('controller').flatten().filter('my').map('owner.username').first().value();
-  Memory.myRooms = Memory.myRooms || [];
-  Memory.squads = Memory.squads || {};
   brain.setMarketOrders();
   brain.setConstructionSites();
   brain.cleanCreeps();

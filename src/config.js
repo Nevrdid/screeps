@@ -51,7 +51,7 @@ global.config = {
     screepsPlusEnabled: false,
     screepsPlusToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRvb2FuZ2VscyIsImlhdCI6MTQ4MzU2MTU3OSwiYXVkIjoic2NyZWVwc3BsLnVzIiwiaXNzIjoic2NyZWVwc3BsLnVzIn0.NhobT7Jg8bOAg-MYqrYsgeMgXEVXGVYG9s3G9Qpfm-o',
     enabled: true,
-    summary: false,
+    summary: true,
   },
 
   debug: {
@@ -65,11 +65,9 @@ global.config = {
     healMyCreeps: false,
     repairStructures: false,
   },
-
   autoattack: {
     disabled: false,
     notify: false,
-    timeBetweenAttacks: 2000,
   },
 
   revive: {
@@ -81,7 +79,7 @@ global.config = {
   nextRoom: {
     boostToControllerLevel: 4,
     scoutMinControllerLevel: 4,
-    ttlPerRoomForScout: 1500,
+    ttlPerRoomForScout: 500,
     numberOfNextroomers: 10,
     nextroomerInterval: 500,
     maxRooms: 20,
@@ -111,7 +109,7 @@ global.config = {
   buildRoad: {
     maxConstructionSitesTotal: 80,
     maxConstructionSitesRoom: 3,
-    buildToOtherMyRoom: false,
+    buildToOtherMyRoom: true,
   },
 
   constructionSite: {
@@ -130,17 +128,16 @@ global.config = {
 
   external: {
     distance: 3,
-    defendDistance: 1,
   },
 
   carry: {
     sizes: {
       0: [3, 3], // RCL 1
       550: [4, 4], // RCL 2
-      800: [6, 6], // RCL 3
-      1300: [6, 11], // RCL 4
-      1800: [8, 15], // RCL 5
-      2300: [11, 21], // RCL 6
+      800: [5, 5], // RCL 3
+      1300: [5, 11], // RCL 4
+      1800: [7, 14], // RCL 5
+      2300: [10, 20], // RCL 6
     },
     minSpawnRate: 50,
     // Percentage should increase from base to target room. Decrease may cause stack on border
@@ -162,27 +159,23 @@ global.config = {
     swarmSourceHarvestingMaxParts: 10,
   },
 
+  scout: {
+    amount: [1, 2, 3, 4, 5, 6, 7, 8],   // by RCL
+    intervalBetweenRoomVisits: 500,
+    intervalBetweenHostileVisits: 1500,
+    intervalBetweenBlockedVisits: 5000,
+    maxDistanceAroundTarget: 5,
+    scoutSkipWhenStuck: true, // Useful for novice areas.
+  },
   room: {
-    reservedRCL: {
-      0: 1,
-      1: 1,
-      2: 1,
-      3: 1,
-      4: 1,
-      5: 1,
-      6: 1,
-      7: 1,
-      8: 1,
-    },
+    reservedRCL: [0,1,3,5,5,5,5,5],
+    maxPaternSize: 50,
     revive: true,
     rebuildLayout: 7654,
     handleNukeAttackInterval: 132,
     reviveEnergyCapacity: 1000,
     reviveEnergyAvailable: 1000,
     reviveStorageAvailable: 3000,
-    scoutInterval: 1499,
-    scoutSkipWhenStuck: true, // Useful for novice areas.
-    scout: true, // TODO somehow broken ?? Is it broken ??
     upgraderMinStorage: 0,
     upgraderStorageFactor: 2,
     lastSeenThreshold: 1000000,
@@ -239,13 +232,14 @@ global.config = {
       carry: 5,
     },
     otherRoom: {
+      scout: 10,
       harvester: 11,
       defender: 12,
       defendranged: 13,
       nextroomer: 15,
-      carry: 17,
-      sourcer: 18,
-      reserver: 19,
+      reserver: 16,
+      sourcer: 17,
+      carry: 18,
     },
   },
 };

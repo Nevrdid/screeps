@@ -37,21 +37,33 @@ roles.repairer.execute = function(creep) {
     if (creep.memory.step <= 0) {
       const structures = creep.room.findPropertyFilter(FIND_STRUCTURES, 'structureType', [STRUCTURE_WALL, STRUCTURE_RAMPART]);
       if (structures.length > 0) {
-        let min = WALL_HITS_MAX;
+        let min = structures[0].hits;
 
-        for (const structure of structures) {
-          if (min > structure.hits) {
-            min = structure.hits;
+        for (const i in structures) {
+          if (min > structures[i].hits) {
+            min = structures[i].hits;
           }
         }
         creep.memory.step = min;
       }
     }
-
+    
+    creep.say('🚧');
+    
     const methods = [Creep.getEnergy];
-    methods.push(Creep.repairStructure);
+    if (creep.isStuck()) {
+      creep.moveRandom();
+      return false;
+  }
+  if (creep.room.memory.energyStats.average < (creep.room.energyCapacityAvailable * 2 / 3)) {
+      methods.push(Creep.transferEnergy);
+      creep.say('📊');
+      return Creep.execute(creep, methods);
+  } else {
+       methods.push(Creep.repairStructure);
+  }
+    
     methods.push(Creep.constructTask);
-
     if (Creep.execute(creep, methods)) {
       return true;
     }

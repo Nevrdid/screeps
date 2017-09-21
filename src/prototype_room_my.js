@@ -6,11 +6,13 @@ Room.prototype.myHandleRoom = function() {
   }
   this.memory.lastSeen = Game.time;
   this.memory.constructionSites = this.find(FIND_CONSTRUCTION_SITES);
-  const room = this;
 
   // TODO Fix for after `delete Memory.rooms`
-  if (!room.memory.position || !room.memory.position.structure) {
+  if (!this.memory.position || !this.memory.position.structure) {
     this.setup();
+  }
+  if (!this.memory.roomsPatern) {
+    this.initRoomsPatern();
   }
 
   if (!this.memory.queue) {
@@ -33,6 +35,53 @@ Room.prototype.myHandleRoom = function() {
     }
   }
   return this.executeRoom();
+};
+/**
+const worldSize =  Game.map.getWorldSize() / 2;
+const inWorld = function(roomName) {
+    const [x, y] = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+    console.log(worldSize, x, y)
+    if (Number(x) < worldSize && Number(y) < worldSize) {
+        
+        return true;
+    }
+    return false;
+}
+**/
+Room.prototype.initRoomsPatern = function() {
+    
+  _.each(Game.creeps, (c) => {
+      if (c.memory.role === 'scout' && c.memory.base === this.name) {
+          c.suicide();
+      }
+  })
+  let roomsPatern = [[this.name],[]];
+  let n = 0;
+  let deep = 0;
+  let deepRooms;
+  let prevN;
+  root: while (roomsPatern[deep]) {
+    deepRooms = roomsPatern[deep];
+    deep++;
+    prevN = n;
+    for (let roomName of deepRooms) {
+      const childRooms = Game.map.describeExits(roomName);
+      for (let direction in childRooms) {
+        const childName = childRooms[direction];
+        if (n > config.room.maxPaternSize) {
+          break root;
+        } else if (Game.map.isRoomAvailable(roomName) &&  (deep == 1 || roomsPatern[deep - 1].indexOf(childName) === -1) &&
+          roomsPatern[deep].indexOf(childName) === -1 ) {
+          roomsPatern[deep].push(childName);
+          n++;
+        }
+      }
+    }
+    if (n > prevN) {
+      roomsPatern.push([]);
+    }
+  }
+  this.memory.roomsPatern = roomsPatern;
 };
 
 Room.prototype.getLinkStorage = function() {
@@ -165,19 +214,9 @@ Room.prototype.handleScout = function() {
   if (this.name === 'sim') {
     return false;
   }
-  const shouldSpawn = (
-    this.exectueEveryTicks(config.room.scoutInterval) &&
-    this.controller.level >= 2 &&
-    this.memory.queue.length === 0 &&
-    config.room.scout
-  );
-  if (shouldSpawn) {
-    const scoutSpawn = {
-      role: 'scout',
-    };
-    if (!this.inQueue(scoutSpawn)) {
-      this.memory.queue.push(scoutSpawn);
-    }
+  let amountNeeded = config.scout.amount[this.controller.level - 1];
+  if (amountNeeded && this.exectueEveryTicks(Math.ceil(1500 / amountNeeded))) {
+    this.checkRoleToSpawn('scout', 0, undefined, undefined, 0, this.name);
   }
 };
 
@@ -266,12 +305,13 @@ Room.prototype.getHarvesterAmount = function() {
   if (!this.storage) {
     amount = 2;
     // TODO maybe better spawn harvester when a carry recognize that the dropped energy > threshold
-    if (this.controller.level === 2 || this.controller.level === 3) {
-      amount = 5;
+    if (this.controller.level <= 3) {
+      amount = this.find(FIND_MY_CREEPS, {filter: (c) =>{c.memory.role === 'carry'}}).length || 2;
+      //amount = 5; 
     }
   } else {
     if (this.storage.store.energy < config.creep.energyFromStorageThreshold && this.controller.level < 5) {
-      amount = 3;
+      amount = 5;
     }
     if (this.storage.store.energy > 2 * config.creep.energyFromStorageThreshold && this.controller.level > 6) {
       amount = 2;

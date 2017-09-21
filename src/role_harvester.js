@@ -18,18 +18,44 @@
 roles.harvester = {};
 
 roles.harvester.settings = {
-  param: ['controller.level', 'energyAvailable'],
-  layoutString: 'MWC',
-  amount: {
-    1: [2, 1, 1],
-    3: {
-      0: [2, 1, 1],
-    },
+  param: ['energyCapacityAvailable'],
+  prefixString: {
+    0: '',
+    301: 'CCM',  //RCL3-
+    550: 'MW',
+    551: 'CCM',  //RCL3+
+    800: '',
+    1301: '',
   },
-  maxLayoutAmount: 6,
+  layoutString: {
+    0: 'MWC',
+    301: 'MW',  //RCL3-
+    550: 'MWC',
+    551: 'MW',  //RCL3+
+    800: 'MCW',
+    //801: 'MCW',//RCL4+
+  },
+  amount: {
+    0: [2, 1, 1], 
+    301: [2, 1],  //RCL3-
+    550: [2, 1, 1],
+    551: [1, 2],  //RCL3+
+    800: [6, 4, 2],
+    801: [4, 4, 4],//RCL4+
+  },
 };
 roles.harvester.updateSettings = function(room, creep) {
-  if (room.storage && room.storage.my && room.storage.store.energy > config.creep.energyFromStorageThreshold && room.energyAvailable > 350 && !room.memory.misplacedSpawn) {
+  if (room.find(FIND_MY_CREEPS).length === 0 || room.memory.energyStats.average < room.energyCapacityAvailable / 2) {
+    return {
+      prefixString: '',
+      layoutString: 'MWC',
+      amount: {
+          0: [2, 1, 1],
+          350: [3, 1, 2],
+          800:[4, 1, 3]
+      },
+    };
+  } else if (room.storage && room.storage.my && room.storage.store.energy > config.creep.energyFromStorageThreshold && room.energyAvailable > 350 && !room.memory.misplacedSpawn) {
     return {
       prefixString: 'WMC',
       layoutString: 'MC',
@@ -48,6 +74,14 @@ roles.harvester.buildRoad = true;
 roles.harvester.boostActions = ['capacity'];
 
 roles.harvester.preMove = function(creep, directions) {
+  if(creep.isStuck()) {
+      creep.memory.stucked = (creep.memory.stucked && (creep.memory.stucked + 1)) || 1;
+      if(creep.memory.stucked > 250 && creep.ticksToLive < 500) {
+          creep.suicide();
+          creep.say('renew');
+          creep.room.checkRoleToSpawn('harvester', creep.room.getHarvesterAmount(), 'harvester'); 
+      }
+  }
   const resources = creep.room.find(FIND_DROPPED_RESOURCES, {
     filter: Creep.pickableResources(creep),
   });
@@ -64,9 +98,12 @@ roles.harvester.preMove = function(creep, directions) {
   creep.spawnReplacement(1);
 
   if (!creep.room.storage || !creep.room.storage.my || creep.room.memory.misplacedSpawn || (creep.room.storage.store.energy + creep.carry.energy) < config.creep.energyFromStorageThreshold) {
-    creep.harvesterBeforeStorage();
-    creep.memory.routing.reached = true;
-    return true;
+      
+        creep.harvesterBeforeStorage();
+        //if(!creep.isStuck() ){
+            creep.memory.routing.reached = true;
+            return true;
+        //}
   }
 
   let reverse = creep.carry.energy === 0;

@@ -16,7 +16,18 @@ roles.planer.settings = {
 };
 
 roles.planer.action = function(creep) {
-  const methods = [Creep.getEnergy];
+    const methods = [Creep.getEnergy];
+  if (creep.isStuck()) {
+      creep.moveRandom();
+      return false;
+  }
+  if (creep.room.memory.energyStats.average < (creep.room.energyCapacityAvailable * 2 / 3)) {
+      methods.push(Creep.transferEnergy);
+      creep.say('📊');
+      return Creep.execute(creep, methods);
+  }
+  creep.say('🚧');
+  
 
   methods.push(Creep.constructTask);
   // methods.push(Creep.buildRoads);

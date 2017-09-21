@@ -40,7 +40,9 @@ Room.prototype.initSetMinerals = function() {
 
 Room.prototype.initSetStorageAndPathStart = function() {
   const costMatrix = this.getMemoryCostMatrix();
-  const storagePos = this.memory.position.creep[this.controller.id].getBestNearPosition();
+  const rawPos = this.memory.position.creep[this.controller.id];
+  let storagePos = new RoomPosition(rawPos.x, rawPos.y, rawPos.roomName);
+  storagePos= storagePos.getBestNearPosition();
   this.memory.position.structure.storage.push(storagePos);
   // TODO should also be done for the other structures
   costMatrix.set(storagePos.x, storagePos.y, config.layout.structureAvoid);
